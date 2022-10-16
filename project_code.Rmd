@@ -1,0 +1,16 @@
+---
+title: "Project"
+author: "Santosh Reddy Edulapalle"
+date: "2022-11-07"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+We will use this markdown file to code our project and write any relevant updates.
+```{r}
+print("Hello World!")
+```
+
