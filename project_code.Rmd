@@ -14,3 +14,72 @@ We will use this markdown file to code our project and write any relevant update
 print("Hello World!")
 ```
 
+Data set:
+ 
+This dataset consists of several samller datasets. Now we will try to combine all those smaller datasets to make main big dataframe to make things easier.
+
+```{r}
+df.rice.farm.harvest.price <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Rice_farm_harvest_price.csv")
+
+
+df.rice.area.production.yield <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Rice_area_production_yield.csv")
+
+
+df.irrigation.sourcewise.irrigated.area <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Irrigation_sourcewise_irrigated_area.csv")
+
+
+df.irrigation.rice.area <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Irrigation_rice_area.csv")
+
+
+df.inputs.wages <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Inputs_wages.csv")
+
+
+df.inputs.season.fertilizer.consumption <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Inputs_season_fertilizer_consumption.csv")
+
+
+df.inputs.fertilizer.consumption <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Inputs_fertilizer_consumption.csv")
+
+df.environment.temperature.minimum <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_temperature_minimum*.csv")
+
+df.environment.temperature.maximum <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_temperature_maximum*.csv")
+
+df.environment.precipitation <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_precipitation*.csv")
+
+df.environment.evapotranspiration.potential <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_evapotranspiration_potential*.csv")
+
+df.environment.evapotranspiration.actual <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_evapotranspiration_actual*.csv")
+
+df.biophysical.soil.type <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_soil_type.csv")
+
+df.biophysical.monthly.rainfall <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_monthly_rainfall.csv")
+
+df.biophysical.length.of.growing.period <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_length_of_growing_period.csv")
+
+df.biophysical.landuse <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_landuse.csv")
+
+
+```
+
+
+Now that our datasets are loaded. we will try to combine all those data sets to a single DF.
+
+We are going to use $\textbf{joins from dplyr package}$ here. We are going to use full join because we don't want to loose any data. 
+we will plan to handle the missing values later.
+
+```{r}
+
+#testing in progress!
+library(dplyr)
+test1 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code"))
+test2 <- inner_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code"))
+test3 <- merge(df.rice.area.production.yield,df.rice.farm.harvest.price, by.x = "Dist.Code", by.y = "Dist.Code", all = T)
+
+test4 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
+test5 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+
+test6 <- full_join(test4,df.irrigation.sourcewise.irrigated.area, by= c("Dist.Code","State.Code","State.Name","Dist.Name"))
+
+
+```
+
+
