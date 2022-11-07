@@ -66,7 +66,11 @@ Now that our datasets are loaded. we will try to combine all those data sets to 
 We are going to use $\textbf{joins from dplyr package}$ here. We are going to use full join because we don't want to loose any data. 
 we will plan to handle the missing values later.
 
+We are getting lot of rows due to cartesian product. As per discussion with Professor,k decided to move on with join on Year and concentrate on new data first.
+
 ```{r}
+
+#TODO
 
 #testing in progress!
 library(dplyr)
@@ -78,6 +82,10 @@ test4 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by =
 test5 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
 
 test6 <- full_join(test4,df.irrigation.sourcewise.irrigated.area, by= c("Dist.Code","State.Code","State.Name","Dist.Name"))
+
+test7 <- full_join(test5,df.irrigation.sourcewise.irrigated.area, by= c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+
+test8 <- full_join(test7,df.irrigation.rice.area, by= c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
 
 
 ```
