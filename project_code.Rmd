@@ -5,6 +5,7 @@ date: "2022-11-07"
 output: html_document
 ---
 
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -70,24 +71,24 @@ We are getting lot of rows due to cartesian product. As per discussion with Prof
 
 ```{r}
 
-#TODO
-
-#testing in progress!
 library(dplyr)
-test1 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code"))
-test2 <- inner_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code"))
-test3 <- merge(df.rice.area.production.yield,df.rice.farm.harvest.price, by.x = "Dist.Code", by.y = "Dist.Code", all = T)
 
-test4 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
-test5 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-
-test6 <- full_join(test4,df.irrigation.sourcewise.irrigated.area, by= c("Dist.Code","State.Code","State.Name","Dist.Name"))
-
-test7 <- full_join(test5,df.irrigation.sourcewise.irrigated.area, by= c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-
-test8 <- full_join(test7,df.irrigation.rice.area, by= c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-
+combine1 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine2 <- full_join(combine1,df.irrigation.sourcewise.irrigated.area,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine3 <- full_join(combine2,df.irrigation.rice.area,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine4 <- full_join(combine3,df.inputs.wages,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine5 <- full_join(combine4,df.inputs.season.fertilizer.consumption,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine6 <- full_join(combine5,df.inputs.fertilizer.consumption,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine7 <- full_join(combine6,df.environment.temperature.minimum,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine8 <- full_join(combine7,df.environment.temperature.maximum,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine9 <- full_join(combine8,df.environment.precipitation,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine10 <- full_join(combine9,df.environment.evapotranspiration.potential,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine11 <- full_join(combine10,df.environment.evapotranspiration.actual,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine12 <- full_join(combine11,df.biophysical.monthly.rainfall,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine13 <- full_join(combine12,df.biophysical.landuse,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
+combine14 <- full_join(combine13,df.biophysical.length.of.growing.period,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
+df.all <- full_join(combine14,df.biophysical.soil.type,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
 
 ```
 
-
+Our final dataframe consists of 884 observations with 133 predictors.
