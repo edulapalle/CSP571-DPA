@@ -89,6 +89,28 @@ combine13 <- full_join(combine12,df.biophysical.landuse,by = c("Dist.Code","Stat
 combine14 <- full_join(combine13,df.biophysical.length.of.growing.period,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
 df.all <- full_join(combine14,df.biophysical.soil.type,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
 
+df.all$Dist.Code <- as.factor(df.all$Dist.Code)
+df.all$Year.x <- as.factor(df.all$Year.x)
+df.all$State.Code <- as.factor(df.all$State.Code)
+df.all$State.Name <- as.factor(df.all$State.Name)
+df.all$Dist.Name <- as.factor(df.all$Dist.Name)
+df.all$Year <- as.factor(df.all$Year)
+df.all$Year.y <- as.factor(df.all$Year.y)
+#TODO
+df.all$SOIL.TYPE.PERCENT..Percent. <- factor(df.all$SOIL.TYPE.PERCENT..Percent., levels = c("ORTHIDS","SANDY ALFISOL","LOAMY ALFISOLS","VERTISOLS","VERTIC SOILS")) 
+#this method is not working, try to create dummy varaibles for soil type.
+#also try to take average of rainfall for 3 months each so we have 4 variables instead of 12 variables.
+
 ```
 
 Our final dataframe consists of 884 observations with 133 predictors.
+
+summary
+
+
+```{r}
+str(df.all)
+str(df.all$SOIL.TYPE.PERCENT..Percent.)
+summary(df.all)
+```
+
