@@ -19,6 +19,13 @@ Data set:
  
 This dataset consists of several samller datasets. Now we will try to combine all those smaller datasets to make main big dataframe to make things easier.
 
+Since there are many columns in dataset, we like to reduce some redundant columns by talking average of months by general agricultural seasons in India.
+Kharif - July - October.
+Rabi - November - April
+Zaid - March - June
+
+But now for analysis reasons, we consider Rabi to be only November to February.
+
 ```{r}
 df.rice.farm.harvest.price <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Rice_farm_harvest_price.csv")
 
@@ -50,7 +57,7 @@ df.environment.evapotranspiration.potential <- read.csv("/Users/santosh/Document
 
 df.environment.evapotranspiration.actual <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_evapotranspiration_actual*.csv")
 
-df.biophysical.soil.type <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_soil_type.csv")
+df.biophysical.soil.type1 <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_soil_type1.csv")
 
 df.biophysical.monthly.rainfall <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_monthly_rainfall.csv")
 
@@ -61,6 +68,65 @@ df.biophysical.landuse <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/D
 
 ```
 
+```{r}
+#calculating means 
+#df.biophysical.monthly.rainfall
+df.biophysical.monthly.rainfall$Zaid.rainfall.mm <- rowMeans(df.biophysical.monthly.rainfall[,c("MARCH.RAINFALL..Millimeters.","APRIL.RAINFALL..Millimeters.","MAY.RAINFALL..Millimeters.","JUNE.RAINFALL..Millimeters.")])
+df.biophysical.monthly.rainfall$Kharif.rainfall.mm <- rowMeans(df.biophysical.monthly.rainfall[,c("JULY.RAINFALL..Millimeters.","AUGUST.RAINFALL..Millimeters.","SEPTEMBER.RAINFALL..Millimeters.","OCTOBER.RAINFALL..Millimeters.")])
+df.biophysical.monthly.rainfall$Rabi.rainfall.mm <- rowMeans(df.biophysical.monthly.rainfall[,c("NOVEMBER.RAINFALL..Millimeters.","DECEMBER.RAINFALL..Millimeters.","JANUARY.RAINFALL..Millimeters.","FEBRUARY.RAINFALL..Millimeters.")])
+
+#df.environment.evapotranspiration.actual
+df.environment.evapotranspiration.actual$Zaid.evapotranspiration.actual.mm<-
+  rowMeans(df.environment.evapotranspiration.actual[,c("MARCH.ACTUAL..Millimeters.","APRIL.ACTUAL..Millimeters.","MAY.ACTUAL..Millimeters.","JUNE.ACTUAL..Millimeters.")])
+df.environment.evapotranspiration.actual$Kharif.evapotranspiration.actual.mm<-
+  rowMeans(df.environment.evapotranspiration.actual[,c("JULY.ACTUAL..Millimeters.","AUGUST.ACTUAL..Millimeters.","SEPTEMBER.ACTUAL..Millimeters.","OCTOBER.ACTUAL..Millimeters.")])
+df.environment.evapotranspiration.actual$Rabi.evapotranspiration.actual.mm<-
+  rowMeans(df.environment.evapotranspiration.actual[,c("NOVEMBER.ACTUAL..Millimeters.","DECEMBER.ACTUAL..Millimeters.","JANUARY.ACTUAL..Millimeters.","FEBRUARY.ACTUAL..Millimeters.")])
+
+
+#df.environment.evapotranspiration.potential
+df.environment.evapotranspiration.potential$Zaid.evapotranspiration.potential.mm<-
+  rowMeans(df.environment.evapotranspiration.potential[,c("MARCH.POTENTIAL..Millimeters.","APRIL.POTENTIAL..Millimeters.","MAY.POTENTIAL..Millimeters.","JUNE.POTENTIAL..Millimeters.")])
+df.environment.evapotranspiration.potential$Kharif.evapotranspiration.potential.mm<-
+  rowMeans(df.environment.evapotranspiration.potential[,c("JULY.POTENTIAL..Millimeters.","AUGUST.POTENTIAL..Millimeters.","SEPTEMBER.POTENTIAL..Millimeters.","OCTOBER.POTENTIAL..Millimeters.")])
+df.environment.evapotranspiration.potential$Rabi.evapotranspiration.potential.mm<-
+  rowMeans(df.environment.evapotranspiration.potential[,c("NOVEMBER.POTENTIAL..Millimeters.","DECEMBER.POTENTIAL..Millimeters.","JANUARY.POTENTIAL..Millimeters.","FEBRUARY.POTENTIAL..Millimeters.")])
+
+#df.environment.precipitation
+df.environment.precipitation$Zaid.percipitation.mm <- rowMeans( df.environment.precipitation[,c("MARCH.PERCIPITATION..Millimeters.","APRIL.PERCIPITATION..Millimeters.","MAY.PERCIPITATION..Millimeters.","JUNE.PERCIPITATION..Millimeters.")])
+df.environment.precipitation$Kharif.percipitation.mm <- rowMeans( df.environment.precipitation[,c("JULY.PERCIPITATION..Millimeters.","AUGUST.PERCIPITATION..Millimeters.","SEPTEMBER.PERCIPITATION..Millimeters.","OCTOBER.PERCIPITATION..Millimeters.")])
+df.environment.precipitation$Rabi.percipitation.mm <-rowMeans( df.environment.precipitation[,c("NOVEMBER.PERCIPITATION..Millimeters.","DECEMBER.PERCIPITATION..Millimeters.","JANUARY.PERCIPITATION..Millimeters.","FEBRUARY.PERCIPITATION..Millimeters.")])
+
+
+#df.environment.temperature.maximum
+
+df.environment.temperature.maximum$Zaid.temp.max.c <- rowMeans(df.environment.temperature.maximum[,c("MARCH.MAXIMUM..Centigrate.","APRIL.MAXIMUM..Centigrate.","MAY.MAXIMUM..Centigrate.","JUNE.MAXIMUM..Centigrate.")])
+df.environment.temperature.maximum$Kharif.temp.max.c <- rowMeans(df.environment.temperature.maximum[,c("JULY.MAXIMUM..Centigrate.","AUGUST.MAXIMUM..Centigrate.","SEPTEMBER.MAXIMUM..Centigrate.","OCTOBER.MAXIMUM..Centigrate.")])
+df.environment.temperature.maximum$Rabi.temp.max.c <- rowMeans(df.environment.temperature.maximum[,c("NOVEMBER.MAXIMUM..Centigrate.","DECEMBER.MAXIMUM..Centigrate.","JANUARY.MAXIMUM..Centigrate.","FEBRUARY.MAXIMUM..Centigrate.")])
+
+#df.environment.temperature.minimum
+
+df.environment.temperature.minimum$Zaid.temp.min.c <- rowMeans(df.environment.temperature.minimum[,c("MARCH.MINIMUM..Centigrate.","APRIL.MINIMUM..Centigrate.","MAY.MINIMUM..Centigrate.","JUNE.MINIMUM..Centigrate.")])
+df.environment.temperature.minimum$Kharif.temp.min.c <- rowMeans(df.environment.temperature.minimum[,c("JULY.MINIMUM..Centigrate.","AUGUST.MINIMUM..Centigrate.","SEPTEMBER.MINIMUM..Centigrate.","OCTOBER.MINIMUM..Centigrate.")])
+df.environment.temperature.minimum$Rabi.temp.min.c <- rowMeans(df.environment.temperature.minimum[,c("NOVEMBER.MINIMUM..Centigrate.","DECEMBER.MINIMUM..Centigrate.","JANUARY.MINIMUM..Centigrate.","FEBRUARY.MINIMUM..Centigrate.")])
+
+```
+
+```{r}
+library(dplyr)
+#dropping all other columns
+df.biophysical.monthly.rainfall <- select(df.biophysical.monthly.rainfall,1:5,19:21)
+df.environment.evapotranspiration.actual <- select(df.environment.evapotranspiration.actual,1:5,18:20)
+
+df.environment.evapotranspiration.potential <- select(df.environment.evapotranspiration.potential,1:5,18:20)
+df.environment.precipitation <- select(df.environment.precipitation,1:5,18:20)
+df.environment.temperature.maximum <- select(df.environment.temperature.maximum,1:5,18:20)
+df.environment.temperature.minimum <- select(df.environment.temperature.minimum,1:5,18:20)
+
+
+
+
+```
 
 Now that our datasets are loaded. we will try to combine all those data sets to a single DF.
 
@@ -71,7 +137,6 @@ We are getting lot of rows due to cartesian product. As per discussion with Prof
 
 ```{r}
 
-library(dplyr)
 
 combine1 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
 combine2 <- full_join(combine1,df.irrigation.sourcewise.irrigated.area,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
@@ -87,8 +152,14 @@ combine11 <- full_join(combine10,df.environment.evapotranspiration.actual,by = c
 combine12 <- full_join(combine11,df.biophysical.monthly.rainfall,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
 combine13 <- full_join(combine12,df.biophysical.landuse,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
 combine14 <- full_join(combine13,df.biophysical.length.of.growing.period,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
-df.all <- full_join(combine14,df.biophysical.soil.type,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
+df.all <- full_join(combine14,df.biophysical.soil.type1,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
 
+```
+Our final dataframe consists of 884 observations with 137 predictors.
+By taking averages, we reduced predictors from 137 to 82.
+
+```{r}
+#factorising
 df.all$Dist.Code <- as.factor(df.all$Dist.Code)
 df.all$Year.x <- as.factor(df.all$Year.x)
 df.all$State.Code <- as.factor(df.all$State.Code)
@@ -96,21 +167,17 @@ df.all$State.Name <- as.factor(df.all$State.Name)
 df.all$Dist.Name <- as.factor(df.all$Dist.Name)
 df.all$Year <- as.factor(df.all$Year)
 df.all$Year.y <- as.factor(df.all$Year.y)
-#TODO
-df.all$SOIL.TYPE.PERCENT..Percent. <- factor(df.all$SOIL.TYPE.PERCENT..Percent., levels = c("ORTHIDS","SANDY ALFISOL","LOAMY ALFISOLS","VERTISOLS","VERTIC SOILS")) 
-#this method is not working, try to create dummy varaibles for soil type.
-#also try to take average of rainfall for 3 months each so we have 4 variables instead of 12 variables.
 
 ```
 
-Our final dataframe consists of 884 observations with 133 predictors.
+
 
 summary
 
 
 ```{r}
 str(df.all)
-str(df.all$SOIL.TYPE.PERCENT..Percent.)
+
 summary(df.all)
 ```
 
