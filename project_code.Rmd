@@ -170,10 +170,7 @@ df.all$Year.y <- as.factor(df.all$Year.y)
 
 ```
 
-
-
 summary
-
 
 ```{r}
 str(df.all)
@@ -181,3 +178,5 @@ str(df.all)
 summary(df.all)
 ```
 
+#TODO
+#Feature engineering / reduction of predictors
