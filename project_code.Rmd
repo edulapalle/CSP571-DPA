@@ -15,16 +15,11 @@ We will use this markdown file to code our project and write any relevant update
 print("Hello World!")
 ```
 
-Data set:
- 
-This dataset consists of several samller datasets. Now we will try to combine all those smaller datasets to make main big dataframe to make things easier.
 
-Since there are many columns in dataset, we like to reduce some redundant columns by talking average of months by general agricultural seasons in India.
-Kharif - July - October.
-Rabi - November - April
-Zaid - March - June
 
-But now for analysis reasons, we consider Rabi to be only November to February.
+
+
+$\textbf{Loading datasets}$
 
 ```{r}
 df.rice.farm.harvest.price <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Rice_farm_harvest_price.csv")
@@ -67,6 +62,61 @@ df.biophysical.landuse <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/D
 
 
 ```
+
+$\textbf{Handling missing values.}$
+
+(In the ICRISAT website, we are said that missing values are coded as -1).
+As we can see, there are missing values in few columns. They are:
+df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal.
+df.inputs.fertilizer.consumption$TOTAL.PER.HA.OF.NCA..Kg.per.ha. -> (West Godavari 1966,1967. This enire row in the data frame - df.inputs.fertilizer.consumption is not provided. So we can delete this. )
+df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. -> (All the column values of these given districts is missing for these two particular years - 1998,1999 Srikakulam,
+Vishakapatnam, East Godavari, West Godavari, Krishna, Guntur, S.P.S.Nellore, Kurnool, Ananthapur, Kadapa YSR, Chitoor, )
+df.inputs.wages --> There are 132 missing values. (almost 25% data is missing)
+
+So Now, we decided to delete these missing value rows.
+
+
+
+```{r}
+
+df.rice.farm.harvest.price <- df.rice.farm.harvest.price[df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. != -1,]
+df.inputs.fertilizer.consumption <- df.inputs.fertilizer.consumption[df.inputs.fertilizer.consumption$NITROGEN.SHARE.IN.NPK..Percent. != -1,]
+
+df.inputs.season.fertilizer.consumption <- 
+  df.inputs.season.fertilizer.consumption[df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. != -1,]
+
+df.inputs.wages <- df.inputs.wages[df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. != -1,]
+
+df.inputs.wages <- df.inputs.wages[df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. != -1,]
+
+
+# count1 <- ifelse(df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. == -1,1,0)
+# count2 <- ifelse(df.inputs.fertilizer.consumption$TOTAL.PER.HA.OF.GCA..Kg.per.ha. == -1,1,0)
+# count3 <- ifelse(df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. == -1,1,0)
+# count4 <- ifelse(df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
+# count5 <- ifelse(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
+# count6 <- ifelse(df.inputs.wages$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
+# 
+# 
+# sum(count1)
+# sum(count2)
+# sum(count3)
+# sum(count4)
+# sum(count5)
+# sum(count6)
+# sum(count7)
+
+
+```
+
+
+Since there are many columns in dataset, we like to reduce some redundant columns by talking average of months by general agricultural seasons in India.
+Kharif - July - October.
+Rabi - November - April
+Zaid - March - June
+
+But now for analysis reasons, we consider Rabi to be only November to February.
+
 
 ```{r}
 #calculating means 
@@ -112,58 +162,58 @@ df.environment.temperature.minimum$Rabi.temp.min.c <- rowMeans(df.environment.te
 
 ```
 
+Deleting all other columns ( January to December)
+
 ```{r}
 library(dplyr)
 #dropping all other columns
-df.biophysical.monthly.rainfall <- select(df.biophysical.monthly.rainfall,1:5,19:21)
-df.environment.evapotranspiration.actual <- select(df.environment.evapotranspiration.actual,1:5,18:20)
+df.biophysical.monthly.rainfall <- select(df.biophysical.monthly.rainfall,1:3,19:21)
+df.environment.evapotranspiration.actual <- select(df.environment.evapotranspiration.actual,1:3,18:20)
 
-df.environment.evapotranspiration.potential <- select(df.environment.evapotranspiration.potential,1:5,18:20)
-df.environment.precipitation <- select(df.environment.precipitation,1:5,18:20)
-df.environment.temperature.maximum <- select(df.environment.temperature.maximum,1:5,18:20)
-df.environment.temperature.minimum <- select(df.environment.temperature.minimum,1:5,18:20)
+df.environment.evapotranspiration.potential <- select(df.environment.evapotranspiration.potential,1:3,18:20)
+df.environment.precipitation <- select(df.environment.precipitation,1:3,18:20)
+df.environment.temperature.maximum <- select(df.environment.temperature.maximum,1:3,18:20)
+df.environment.temperature.minimum <- select(df.environment.temperature.minimum,1:3,18:20)
 
-
+#TODO
+#write code here to delete state name and district name from all the data sets.
 
 
 ```
 
-Now that our datasets are loaded. we will try to combine all those data sets to a single DF.
+Now that our datasets are ready, we will try to combine all those data sets to a single DF.
 
 We are going to use $\textbf{joins from dplyr package}$ here. We are going to use full join because we don't want to loose any data. 
 we will plan to handle the missing values later.
 
 We are getting lot of rows due to cartesian product. As per discussion with Professor,k decided to move on with join on Year and concentrate on new data first.
 
+
+
 ```{r}
 
+#TODO
+#Complete previous TODO before running this.
 
-combine1 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine2 <- full_join(combine1,df.irrigation.sourcewise.irrigated.area,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine3 <- full_join(combine2,df.irrigation.rice.area,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine4 <- full_join(combine3,df.inputs.wages,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine5 <- full_join(combine4,df.inputs.season.fertilizer.consumption,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine6 <- full_join(combine5,df.inputs.fertilizer.consumption,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine7 <- full_join(combine6,df.environment.temperature.minimum,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine8 <- full_join(combine7,df.environment.temperature.maximum,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine9 <- full_join(combine8,df.environment.precipitation,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine10 <- full_join(combine9,df.environment.evapotranspiration.potential,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine11 <- full_join(combine10,df.environment.evapotranspiration.actual,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine12 <- full_join(combine11,df.biophysical.monthly.rainfall,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine13 <- full_join(combine12,df.biophysical.landuse,by = c("Dist.Code","State.Code","State.Name","Dist.Name","Year"))
-combine14 <- full_join(combine13,df.biophysical.length.of.growing.period,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
-df.all <- full_join(combine14,df.biophysical.soil.type1,by = c("Dist.Code","State.Code","State.Name","Dist.Name"))
+combine1 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","Year"))
+combine2 <- full_join(combine1,df.irrigation.sourcewise.irrigated.area,by = c("Dist.Code","State.Code","Year"))
+combine3 <- full_join(combine2,df.irrigation.rice.area,by = c("Dist.Code","State.Code","Year"))
+combine4 <- full_join(combine3,df.inputs.wages,by = c("Dist.Code","State.Code","Year"))
+combine5 <- full_join(combine4,df.inputs.season.fertilizer.consumption,by = c("Dist.Code","State.Code","Year"))
+combine6 <- full_join(combine5,df.inputs.fertilizer.consumption,by = c("Dist.Code","State.Code","Year"))
+combine7 <- full_join(combine6,df.environment.temperature.minimum,by = c("Dist.Code","State.Code","Year"))
+combine8 <- full_join(combine7,df.environment.temperature.maximum,by = c("Dist.Code","State.Code","Year"))
+combine9 <- full_join(combine8,df.environment.precipitation,by = c("Dist.Code","State.Code","Year"))
+combine10 <- full_join(combine9,df.environment.evapotranspiration.potential,by = c("Dist.Code","State.Code","Year"))
+combine11 <- full_join(combine10,df.environment.evapotranspiration.actual,by = c("Dist.Code","State.Code","Year"))
+combine12 <- full_join(combine11,df.biophysical.monthly.rainfall,by = c("Dist.Code","State.Code","Year"))
+combine13 <- full_join(combine12,df.biophysical.landuse,by = c("Dist.Code","State.Code","Year"))
+combine14 <- full_join(combine13,df.biophysical.length.of.growing.period,by = c("Dist.Code","State.Code"))
+df.all <- full_join(combine14,df.biophysical.soil.type1,by = c("Dist.Code","State.Code"))
 
 ```
-Our final dataframe consists of 884 observations with 137 predictors.
-By taking averages, we reduced predictors from 137 to 82.
-
-Further removing state name and district name because we have their codes.We can refer notes for district name if required.
-
-```{r}
-#df.all <- select(df.all,-4,-5)
-#df.all<- select(df.all,-c("Year","Year.y"))
-```
+Initially, our final dataframe consists of 884 observations with 137 predictors.
+But by taking averages of columns season-wise, we reduced predictors from 137 to 82 and 780 observations.
 
 
 ```{r}
@@ -181,45 +231,15 @@ df.all$LENGTH.OF.GROWING.PERIOD.DAYS..Number. <- as.numeric(df.all$LENGTH.OF.GRO
 
 summary
 
+
 ```{r}
+
 str(df.all)
 
 summary(df.all)
 
 ```
-(In the ICRISAT website, we are said that missing values are coded as -1).
-As we can see, there are missing values in few columns. They are:
-df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal.
-df.inputs.fertilizer.consumption$TOTAL.PER.HA.OF.NCA..Kg.per.ha. -> (West Godavari 1966,1967. This enire row in the data frame - df.inputs.fertilizer.consumption is not provided. So we can delete this. )
-df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. -> (All the column values of these given districts is missing for these two particular years - 1998,1999 Srikakulam,
-Vishakapatnam, East Godavari, West Godavari, Krishna, Guntur, S.P.S.Nellore, Kurnool, Ananthapur, Kadapa YSR, Chitoor, )
-df.inputs.wages --> There are 132 missing values. (almost 25% data is missing)
 
-So Now, we decided to delete these missing value rows.
-
-Handling missing values.
-
-```{r}
-
-
-# count1 <- ifelse(df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. == -1,1,0)
-# count2 <- ifelse(df.inputs.fertilizer.consumption$TOTAL.PER.HA.OF.GCA..Kg.per.ha. == -1,1,0)
-# count3 <- ifelse(df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. == -1,1,0)
-# count4 <- ifelse(df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
-# count5 <- ifelse(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
-# count6 <- ifelse(df.inputs.wages$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
-# 
-# 
-# sum(count1)
-# sum(count2)
-# sum(count3)
-# sum(count4)
-# sum(count5)
-# sum(count6)
-# sum(count7)
-
-
-```
 
 
 #TODO
@@ -227,6 +247,7 @@ Handling missing values.
 
 
 finidng corelation
+
 ```{r}
 library(caret)
 library(corrplot)
