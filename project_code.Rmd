@@ -175,9 +175,6 @@ df.environment.precipitation <- select(df.environment.precipitation,1:3,18:20)
 df.environment.temperature.maximum <- select(df.environment.temperature.maximum,1:3,18:20)
 df.environment.temperature.minimum <- select(df.environment.temperature.minimum,1:3,18:20)
 
-#TODO
-#write code here to delete state name and district name from all the data sets.
-
 
 
 df.rice.area.production.yield <- select(df.rice.area.production.yield, -c("State.Name","Dist.Name"))
@@ -206,8 +203,6 @@ We are getting lot of rows due to cartesian product. As per discussion with Prof
 
 ```{r}
 
-#TODO
-#Complete previous TODO before running this.
 
 combine1 <- full_join(df.rice.area.production.yield,df.rice.farm.harvest.price,by = c("Dist.Code","State.Code","Year"))
 combine2 <- full_join(combine1,df.irrigation.sourcewise.irrigated.area,by = c("Dist.Code","State.Code","Year"))
@@ -258,6 +253,9 @@ summary(df.all)
 
 #TODO
 #Feature engineering / reduction of predictors
+#Find correlation
+#further reduce predictors
+#build model
 
 
 finidng corelation
