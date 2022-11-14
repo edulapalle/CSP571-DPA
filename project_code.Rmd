@@ -192,6 +192,52 @@ df.biophysical.soil.type1 <- select(df.biophysical.soil.type1,-c("State.Name","D
 
 ```
 
+
+$\textbf{Normalization : Standard scaling method}$
+
+As we can see from above dataframes, we have each column in different numerical range. Some are in range of 0-100 while some are in range or 10k - 100k.
+So this affects for future analysis, we will bring them to same range -1 to 1 by dividing each column with its maximum value.
+
+```{r}
+# this function scales the all columns except first 3.
+scaling.fn <- function(df.name){
+  df.name[,4:ncol(df.name)] <- apply(df.name[,4:ncol(df.name)],MARGIN = 2,scale)
+  return(df.name)
+}
+
+
+df.biophysical.landuse <- scaling.fn(df.biophysical.landuse)
+
+df.biophysical.monthly.rainfall <- scaling.fn(df.biophysical.monthly.rainfall)
+df.biophysical.soil.type1 <- scaling.fn(df.biophysical.soil.type1)
+df.environment.evapotranspiration.actual <- scaling.fn(df.environment.evapotranspiration.actual)
+df.environment.evapotranspiration.potential <- scaling.fn(df.environment.evapotranspiration.potential)
+df.environment.precipitation <- scaling.fn(df.environment.precipitation)
+df.environment.temperature.maximum <- scaling.fn(df.environment.temperature.maximum)
+df.environment.temperature.minimum <- scaling.fn(df.environment.temperature.minimum)
+df.inputs.fertilizer.consumption <- scaling.fn(df.inputs.fertilizer.consumption)
+df.inputs.season.fertilizer.consumption <- scaling.fn(df.inputs.season.fertilizer.consumption)
+df.inputs.wages <- scaling.fn(df.inputs.wages)
+
+df.irrigation.sourcewise.irrigated.area <- scaling.fn(df.irrigation.sourcewise.irrigated.area)
+
+df.rice.area.production.yield <- scaling.fn(df.rice.area.production.yield)
+
+
+#these only have 4 columns in total so our custom funciton does not work. so we do it manually.
+# df.biophysical.length.of.growing.period <- scaling.fn(df.biophysical.length.of.growing.period)
+#df.irrigation.rice.area <- scaling.fn(df.irrigation.rice.area)
+#df.rice.farm.harvest.price <- scaling.fn(df.rice.farm.harvest.price)
+
+df.biophysical.length.of.growing.period$LENGTH.OF.GROWING.PERIOD.DAYS..Number. <- scale(df.biophysical.length.of.growing.period$LENGTH.OF.GROWING.PERIOD.DAYS..Number.)
+
+df.irrigation.rice.area$RICE.IRRIGATED.AREA..1000.ha. <- scale(df.irrigation.rice.area$RICE.IRRIGATED.AREA..1000.ha.)
+
+df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- scale(df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal.)
+
+```
+
+
 Now that our datasets are ready, we will try to combine all those data sets to a single DF.
 
 We are going to use $\textbf{joins from dplyr package}$ here. We are going to use full join because we don't want to loose any data. 
@@ -234,7 +280,7 @@ df.all$State.Code <- as.factor(df.all$State.Code)
 #df.all$Dist.Name <- as.factor(df.all$Dist.Name)
 #df.all$Year <- as.factor(df.all$Year)
 #df.all$Year.y <- as.factor(df.all$Year.y)
-df.all$LENGTH.OF.GROWING.PERIOD.DAYS..Number. <- as.numeric(df.all$LENGTH.OF.GROWING.PERIOD.DAYS..Number.)
+#df.all$LENGTH.OF.GROWING.PERIOD.DAYS..Number. <- as.numeric(df.all$LENGTH.OF.GROWING.PERIOD.DAYS..Number.)
 
 ```
 
