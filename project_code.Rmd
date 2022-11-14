@@ -162,7 +162,7 @@ df.environment.temperature.minimum$Rabi.temp.min.c <- rowMeans(df.environment.te
 
 ```
 
-Deleting all other columns ( January to December)
+Deleting all other columns ( January to December) & state name and district name.
 
 ```{r}
 library(dplyr)
@@ -178,6 +178,20 @@ df.environment.temperature.minimum <- select(df.environment.temperature.minimum,
 #TODO
 #write code here to delete state name and district name from all the data sets.
 
+
+
+df.rice.area.production.yield <- select(df.rice.area.production.yield, -c("State.Name","Dist.Name"))
+df.rice.farm.harvest.price <- select(df.rice.farm.harvest.price,-c("State.Name","Dist.Name"))
+df.irrigation.rice.area <- select(df.irrigation.rice.area,-c("State.Name","Dist.Name"))
+df.irrigation.sourcewise.irrigated.area <- select(df.irrigation.sourcewise.irrigated.area,-c("State.Name","Dist.Name"))
+df.inputs.wages <- select(df.inputs.wages,-c("State.Name","Dist.Name"))
+df.inputs.season.fertilizer.consumption <- select(df.inputs.season.fertilizer.consumption,-c("State.Name","Dist.Name"))
+df.inputs.fertilizer.consumption <- select(df.inputs.fertilizer.consumption,-c("State.Name","Dist.Name"))
+
+df.biophysical.landuse <- select(df.biophysical.landuse,-c("State.Name","Dist.Name"))
+df.biophysical.length.of.growing.period <- select(df.biophysical.length.of.growing.period,-c("State.Name","Dist.Name"))
+
+df.biophysical.soil.type1 <- select(df.biophysical.soil.type1,-c("State.Name","Dist.Name"))
 
 ```
 
@@ -213,7 +227,7 @@ df.all <- full_join(combine14,df.biophysical.soil.type1,by = c("Dist.Code","Stat
 
 ```
 Initially, our final dataframe consists of 884 observations with 137 predictors.
-But by taking averages of columns season-wise, we reduced predictors from 137 to 82 and 780 observations.
+But by taking averages of columns season-wise, and deleting repeated columns, we reduced predictors from 137 to 80 and 780 observations.
 
 
 ```{r}
