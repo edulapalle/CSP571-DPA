@@ -196,7 +196,8 @@ df.biophysical.soil.type1 <- select(df.biophysical.soil.type1,-c("State.Name","D
 $\textbf{Normalization : Standard scaling method}$
 
 As we can see from above dataframes, we have each column in different numerical range. Some are in range of 0-100 while some are in range or 10k - 100k.
-So this affects for future analysis, we will bring them to same range -1 to 1 by dividing each column with its maximum value.
+So this affects for future analysis, we will bring them to some range.
+scale() is an inbuilt function.
 
 ```{r}
 # this function scales the all columns except first 3.
@@ -299,6 +300,7 @@ summary(df.all)
 
 #TODO
 #Feature engineering / reduction of predictors
+#There are NAs added due to joins, remove them from df.all
 #Find correlation
 #further reduce predictors
 #build model
