@@ -52,7 +52,7 @@ df.environment.evapotranspiration.potential <- read.csv("/Users/santosh/Document
 
 df.environment.evapotranspiration.actual <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_evapotranspiration_actual*.csv")
 
-df.biophysical.soil.type1 <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_soil_type1.csv")
+df.biophysical.soil.type1 <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_soil_type.csv")
 
 df.biophysical.monthly.rainfall <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_monthly_rainfall.csv")
 
@@ -63,6 +63,30 @@ df.biophysical.landuse <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/D
 
 ```
 
+Initillay, district codes 503,504 were missing in some tables becuase these districts are formed after state division. So, a lot of NAs were formed while performing joins. Now we gathered latest possible information for all data sets.
+
+$\textbf{Deleting rows < 1990}$
+
+Other than environment, entire data sets starts from 1990. So, to get fair results, we are deleting observations from environment data sets that are recorded in years < 1990.
+
+```{r}
+#deleting rows less than 1990
+
+del.1990 <- function(df.name){
+  df.name <- df.name[df.name$Year >= 1990,]
+  return(df.name)
+}
+
+df.environment.evapotranspiration.actual <- del.1990(df.environment.evapotranspiration.actual)
+
+df.environment.evapotranspiration.potential <- del.1990(df.environment.evapotranspiration.potential)
+
+df.environment.precipitation <- del.1990(df.environment.precipitation)
+df.environment.temperature.maximum <- del.1990(df.environment.temperature.maximum)
+df.environment.temperature.minimum <- del.1990(df.environment.temperature.minimum)
+```
+
+
 $\textbf{Handling missing values.}$
 
 (In the ICRISAT website, we are said that missing values are coded as -1).
@@ -70,7 +94,7 @@ As we can see, there are missing values in few columns. They are:
 df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal.
 df.inputs.fertilizer.consumption$TOTAL.PER.HA.OF.NCA..Kg.per.ha. -> (West Godavari 1966,1967. This enire row in the data frame - df.inputs.fertilizer.consumption is not provided. So we can delete this. )
 df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. -> (All the column values of these given districts is missing for these two particular years - 1998,1999 Srikakulam,
-Vishakapatnam, East Godavari, West Godavari, Krishna, Guntur, S.P.S.Nellore, Kurnool, Ananthapur, Kadapa YSR, Chitoor, )
+Vishakapatnam, East Godavari, West Godavari, Krishna, Guntur, S.P.S.Nellore, Kurnool, Ananthapur, Kadapa YSR, Chitoor, Prakasam, Vijianagaram.)
 df.inputs.wages --> There are 132 missing values. (almost 25% data is missing)
 
 So Now, we decided to delete these missing value rows.
@@ -239,6 +263,27 @@ df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- scale(df.rice
 ```
 
 
+
+Now 1995,1996 years is not available in df.inputs.wages
+
+```{r}
+# first I will add the known data to the df. i.e., dist.code, state.code and year. 
+#later I can easly fill these NAs with respective averages.
+
+Dist.Code <- rep(c(44,45,46,47,48,49,50,51,52,53,54,503,504),times = 1, each = 2)
+
+State.Code <- rep(c(1),times = 26)
+Year <- rep(c(1995,1996),times = 13)
+test.df <- data.frame(Dist.Code,Year,State.Code)
+test.df
+
+#bind_rows from dplyr package auto fills NAs
+df.inputs.wages <- bind_rows(df.inputs.wages,test.df)
+
+
+```
+
+
 Now that our datasets are ready, we will try to combine all those data sets to a single DF.
 
 We are going to use $\textbf{joins from dplyr package}$ here. We are going to use full join because we don't want to loose any data. 
@@ -269,7 +314,13 @@ df.all <- full_join(combine14,df.biophysical.soil.type1,by = c("Dist.Code","Stat
 
 ```
 Initially, our final dataframe consists of 884 observations with 137 predictors.
-But by taking averages of columns season-wise, and deleting repeated columns, we reduced predictors from 137 to 80 and 780 observations.
+But by taking averages of columns season-wise, and deleting repeated columns(columns after taking averages), we reduced predictors from 137 to 80 and 780 observations.
+By taking data starting from years 1990 we reduced no.of observations from 780 to 364. Maximum NAs have been produced by the only reason that 5 tables were starting from 1950's while every other table is starting from 1990.
+
+
+
+Now 1995,1996 years is not available in df.inputs.wages
+
 
 
 ```{r}
@@ -300,7 +351,7 @@ summary(df.all)
 
 #TODO
 #Feature engineering / reduction of predictors
-#There are NAs added due to joins, remove them from df.all
+#There are NAs added due to joins, remove them from df.all - {work on wages dataset 95,96 years}
 #Find correlation
 #further reduce predictors
 #build model
