@@ -99,6 +99,32 @@ df.inputs.wages --> There are 132 missing values. (almost 25% data is missing)
 
 So Now, we decided to delete these missing value rows.
 
+$\textbf{This handling missing vlaue with mean is calculated in ecel sheet.}$
+
+```{r}
+
+
+
+#replace -1 by mean
+
+# dist <- c(44,45,46,47,48,49,50,51,52,53,54,503,504)
+# for(x in dist){
+#   value <- mean(df.inputs.wages[df.inputs.wages$Dist.Code == x,'df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.'])
+#   
+# }
+# 
+# mean(df.inputs.wages[as.numeric(df.inputs.wages$Dist.Code) == 44,'df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.'])
+# 
+# df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. <- ifelse(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. == -1, NA,df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)
+# 
+# x <- with(df.inputs.wages, mean(DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.[Dist.Code == 504]) )
+# x
+# 
+# 
+# df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.[is.na(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)] <- mean(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day., na.rm = T)
+# 
+
+```
 
 
 ```{r}
@@ -270,15 +296,17 @@ Now 1995,1996 years is not available in df.inputs.wages
 # first I will add the known data to the df. i.e., dist.code, state.code and year. 
 #later I can easly fill these NAs with respective averages.
 
-Dist.Code <- rep(c(44,45,46,47,48,49,50,51,52,53,54,503,504),times = 1, each = 2)
-
-State.Code <- rep(c(1),times = 26)
-Year <- rep(c(1995,1996),times = 13)
-test.df <- data.frame(Dist.Code,Year,State.Code)
-test.df
-
-#bind_rows from dplyr package auto fills NAs
-df.inputs.wages <- bind_rows(df.inputs.wages,test.df)
+# Dist.Code <- rep(c(44,45,46,47,48,49,50,51,52,53,54,503,504),times = 1, each = 2)
+# 
+# State.Code <- rep(c(1),times = 26)
+# Year <- rep(c(1995,1996),times = 13)
+# test.df <- data.frame(Dist.Code,Year,State.Code)
+# test.df
+# 
+# #bind_rows from dplyr package auto fills NAs
+# df.inputs.wages <- bind_rows(df.inputs.wages,test.df)
+# 
+# df.inputs.wages <- ifelse()
 
 
 ```
