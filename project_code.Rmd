@@ -86,78 +86,379 @@ df.environment.temperature.maximum <- del.1990(df.environment.temperature.maximu
 df.environment.temperature.minimum <- del.1990(df.environment.temperature.minimum)
 ```
 
+$\textbf{Deleting rows > 2015}$
+
+So, some tables end with 2015 while others end with 2017. Our target table end with Year 2016. So, to get fair results, we are deleting observations from data sets that are recorded in years > 2015.
+
+```{r}
+#deleting rows more than 2015
+
+del.2015 <- function(df.name){
+  df.name <- df.name[df.name$Year <= 2015,]
+  return(df.name)
+}
+
+df.biophysical.landuse <- del.2015(df.biophysical.landuse)
+df.biophysical.monthly.rainfall <- del.2015(df.biophysical.monthly.rainfall)
+df.inputs.fertilizer.consumption <- del.2015(df.inputs.fertilizer.consumption)
+df.inputs.season.fertilizer.consumption <- del.2015(df.inputs.season.fertilizer.consumption)
+df.inputs.wages <- del.2015(df.inputs.wages)
+df.irrigation.rice.area <- del.2015(df.irrigation.rice.area)
+df.irrigation.sourcewise.irrigated.area <- del.2015(df.irrigation.sourcewise.irrigated.area)
+df.rice.area.production.yield <- del.2015(df.rice.area.production.yield)
+df.rice.farm.harvest.price <- del.2015(df.rice.farm.harvest.price)
+
+
+```
+
+$\textbf{Summary}$
+```{r}
+summary(df.biophysical.landuse)
+summary(df.biophysical.length.of.growing.period)
+summary(df.biophysical.monthly.rainfall)
+summary(df.biophysical.soil.type1)
+summary(df.environment.evapotranspiration.actual)
+summary(df.environment.evapotranspiration.potential)
+summary(df.environment.precipitation)
+summary(df.environment.temperature.maximum)
+summary(df.environment.temperature.minimum)
+summary(df.inputs.fertilizer.consumption)
+summary(df.inputs.season.fertilizer.consumption)
+summary(df.inputs.wages)
+summary(df.irrigation.rice.area)
+summary(df.irrigation.sourcewise.irrigated.area)
+summary(df.rice.area.production.yield)
+summary(df.rice.farm.harvest.price)
+```
+
 
 $\textbf{Handling missing values.}$
 
 (In the ICRISAT website, we are said that missing values are coded as -1).
-As we can see, there are missing values in few columns. They are:
-df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal.
-df.inputs.fertilizer.consumption$TOTAL.PER.HA.OF.NCA..Kg.per.ha. -> (West Godavari 1966,1967. This enire row in the data frame - df.inputs.fertilizer.consumption is not provided. So we can delete this. )
+
+Process:
+
+1. Initially, we skimmed thourgh all datasets and deleted the records which have -1.
+Later after combining all the datasets to single df.all dataframe, we were able to see lot of NAs. After going thourgh careful investigatin, we found out that since we deleteed couple of onbservations in few datasets, those years-observations were causing NA while joining with outher datasets. So, we Handled missing values by taking appropriate years and handling df.input.wages as it is largest missing data.
+Additionally, we did not have districts 503,504 for few tables, so we got new and updated datasets.
+
+2. Now we are taking summuries of all tables, and checking if any table has min:-1, so we are handling those specific columns by performing mean of each district in that specific year gap ( 10 year average for missing districts using filter())
+
+df.irrigation.sourcewise.irrigated.area$OTHER.WELLS.AREA..1000.ha. = has missing values for districts 50,51 for years 2007.
+
+df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. = has missing values for districts 50,51,52,53 for years 1998.
+
 df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. -> (All the column values of these given districts is missing for these two particular years - 1998,1999 Srikakulam,
 Vishakapatnam, East Godavari, West Godavari, Krishna, Guntur, S.P.S.Nellore, Kurnool, Ananthapur, Kadapa YSR, Chitoor, Prakasam, Vijianagaram.)
+
 df.inputs.wages --> There are 132 missing values. (almost 25% data is missing)
 
-So Now, we decided to delete these missing value rows.
-
-$\textbf{This handling missing vlaue with mean is calculated in ecel sheet.}$
+Now handling NA values for df.irrigation.sourcewise.irrigated.area
 
 ```{r}
+library(dplyr)
 
+#replace -1 by NA
 
+df.irrigation.sourcewise.irrigated.area$OTHER.WELLS.AREA..1000.ha. <- ifelse(df.irrigation.sourcewise.irrigated.area$OTHER.WELLS.AREA..1000.ha. == -1, NA,df.irrigation.sourcewise.irrigated.area$OTHER.WELLS.AREA..1000.ha.)
 
-#replace -1 by mean
-
-# dist <- c(44,45,46,47,48,49,50,51,52,53,54,503,504)
-# for(x in dist){
-#   value <- mean(df.inputs.wages[df.inputs.wages$Dist.Code == x,'df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.'])
-#   
-# }
-# 
-# mean(df.inputs.wages[as.numeric(df.inputs.wages$Dist.Code) == 44,'df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.'])
-# 
-# df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. <- ifelse(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. == -1, NA,df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)
-# 
-# x <- with(df.inputs.wages, mean(DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.[Dist.Code == 504]) )
-# x
-# 
-# 
-# df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.[is.na(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)] <- mean(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day., na.rm = T)
-# 
-
+#create a test data frame with 0 rows and 13 columns
+test.df <- data.frame(Dist.Code = integer(),
+                      Year = integer(),
+                      State.Code = integer(),
+                      State.Name = character(),
+                      Dist.Name = character(),
+                      CANALS.AREA..1000.ha. = double(),
+                      TANKS.AREA..1000.ha.  = double(),
+                      TUBE.WELLS.AREA..1000.ha. = double(),
+                      OTHER.WELLS.AREA..1000.ha. = double(),
+                      TOTAL.WELLS.AREA..1000.ha. = double(),
+                      OTHER.SOURCES.AREA..1000.ha. = double(),
+                      NET.AREA..1000.ha.  = double(),
+                      GROSS.AREA..1000.ha.   = double(),
+                      stringsAsFactors = F
+                      )
+str(df.irrigation.sourcewise.irrigated.area)
+dist <- c(44,45,46,47,48,49,50,51,52,53,54,503,504)
+for(y in dist){
+  #we only have missing value for the 2007
+  #round1 - 1990:1999
+  x <- filter(df.irrigation.sourcewise.irrigated.area, df.irrigation.sourcewise.irrigated.area$Dist.Code == y & df.irrigation.sourcewise.irrigated.area$Year >=1990 & df.irrigation.sourcewise.irrigated.area$Year <= 1999)
+  
+  x$OTHER.WELLS.AREA..1000.ha. <- ifelse( is.na(x$OTHER.WELLS.AREA..1000.ha.), mean(x$OTHER.WELLS.AREA..1000.ha.,na.rm = T),x$OTHER.WELLS.AREA..1000.ha.)
+  test.df <- bind_rows(test.df,x)
+    #round2 - 2000:2009
+  x1 <- filter(df.irrigation.sourcewise.irrigated.area, df.irrigation.sourcewise.irrigated.area$Dist.Code == y & df.irrigation.sourcewise.irrigated.area$Year >=2000 & df.irrigation.sourcewise.irrigated.area$Year <= 2009)
+  
+  x1$OTHER.WELLS.AREA..1000.ha. <- ifelse( is.na(x1$OTHER.WELLS.AREA..1000.ha.), mean(x1$OTHER.WELLS.AREA..1000.ha.,na.rm = T),x1$OTHER.WELLS.AREA..1000.ha.)
+  test.df <- bind_rows(test.df,x1)
+    #round3 - 2010:2019
+  x2 <- filter(df.irrigation.sourcewise.irrigated.area, df.irrigation.sourcewise.irrigated.area$Dist.Code == y & df.irrigation.sourcewise.irrigated.area$Year >=2010 & df.irrigation.sourcewise.irrigated.area$Year <= 2019)
+  
+  x2$OTHER.WELLS.AREA..1000.ha. <- ifelse( is.na(x2$OTHER.WELLS.AREA..1000.ha.), mean(x2$OTHER.WELLS.AREA..1000.ha.,na.rm = T),x2$OTHER.WELLS.AREA..1000.ha.)
+  test.df <- bind_rows(test.df,x2)
+}
+df.irrigation.sourcewise.irrigated.area <- test.df
+rm(test.df)
+rm(x)
+rm(x1)
+rm(x2)
 ```
 
 
+Now handling NA values for df.rice.farm.harvest.price
+
 ```{r}
 
-df.rice.farm.harvest.price <- df.rice.farm.harvest.price[df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. != -1,]
-df.inputs.fertilizer.consumption <- df.inputs.fertilizer.consumption[df.inputs.fertilizer.consumption$NITROGEN.SHARE.IN.NPK..Percent. != -1,]
+#replace -1 by NA
 
-df.inputs.season.fertilizer.consumption <- 
-  df.inputs.season.fertilizer.consumption[df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. != -1,]
+df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- ifelse(df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. == -1, NA,df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal.)
 
-df.inputs.wages <- df.inputs.wages[df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. != -1,]
+#create a test data frame with 0 rows and 6 columns
+test.df <- data.frame(Dist.Code = integer(),
+                      Year = integer(),
+                      State.Code = integer(),
+                      State.Name = character(),
+                      Dist.Name = character(),
+                      PADDY.HARVEST.PRICE..Rs.per.Quintal. = double(),
+                      stringsAsFactors = F
+                      )
+dist <- c(44,45,46,47,48,49,50,51,52,53,54,503,504)
+for(y in dist){
+  #we only have missing value for the 1998
+  #round1 - 1990:1999
+  x <- filter(df.rice.farm.harvest.price, df.rice.farm.harvest.price$Dist.Code == y & df.rice.farm.harvest.price$Year >=1990 & df.rice.farm.harvest.price$Year <= 1999)
+  
+  x$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- ifelse( is.na(x$PADDY.HARVEST.PRICE..Rs.per.Quintal.), mean(x$PADDY.HARVEST.PRICE..Rs.per.Quintal.,na.rm = T),x$PADDY.HARVEST.PRICE..Rs.per.Quintal.)
+  test.df <- bind_rows(test.df,x)
+    #round2 - 2000:2009
+  x1 <- filter(df.rice.farm.harvest.price, df.rice.farm.harvest.price$Dist.Code == y & df.rice.farm.harvest.price$Year >=2000 & df.rice.farm.harvest.price$Year <= 2009)
+  
+  x1$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- ifelse( is.na(x1$PADDY.HARVEST.PRICE..Rs.per.Quintal.), mean(x1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,na.rm = T),x1$PADDY.HARVEST.PRICE..Rs.per.Quintal.)
+  test.df <- bind_rows(test.df,x1)
+    #round3 - 2010:2019
+  x2 <- filter(df.rice.farm.harvest.price, df.rice.farm.harvest.price$Dist.Code == y & df.rice.farm.harvest.price$Year >=2010 & df.rice.farm.harvest.price$Year <= 2019)
+  
+  x2$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- ifelse( is.na(x2$PADDY.HARVEST.PRICE..Rs.per.Quintal.), mean(x2$PADDY.HARVEST.PRICE..Rs.per.Quintal.,na.rm = T),x2$PADDY.HARVEST.PRICE..Rs.per.Quintal.)
+  test.df <- bind_rows(test.df,x2)
+}
+df.rice.farm.harvest.price <- test.df
+rm(test.df)
+rm(x)
+rm(x1)
+rm(x2)
+```
 
-df.inputs.wages <- df.inputs.wages[df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. != -1,]
+
+Now we will handle NA values of df.input.wages
+
+```{r}
+
+#replace -1 by NA
+
+df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. <- ifelse(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. == -1, NA,df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)
+
+df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. <- ifelse(df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. == -1, NA,df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.)
+
+df.inputs.wages$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse(df.inputs.wages$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. == -1, NA,df.inputs.wages$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
+
+df.inputs.wages$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse(df.inputs.wages$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. == -1, NA,df.inputs.wages$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
 
 
-# count1 <- ifelse(df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. == -1,1,0)
-# count2 <- ifelse(df.inputs.fertilizer.consumption$TOTAL.PER.HA.OF.GCA..Kg.per.ha. == -1,1,0)
-# count3 <- ifelse(df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. == -1,1,0)
-# count4 <- ifelse(df.inputs.wages$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
-# count5 <- ifelse(df.inputs.wages$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
-# count6 <- ifelse(df.inputs.wages$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. == -1,1,0)
-# 
-# 
-# sum(count1)
-# sum(count2)
-# sum(count3)
-# sum(count4)
-# sum(count5)
-# sum(count6)
-# sum(count7)
+#filter() from dplyr
 
+#create a test data frame with 0 rows and 9 columns
+test.df <- data.frame(Dist.Code = integer(),
+                      Year = integer(),
+                      State.Code = integer(),
+                      State.Name = character(),
+                      Dist.Name = character(),
+                      DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. = double(),
+                      DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. = double(),
+                      STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. = double(),
+                      STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. = double(),
+                      stringsAsFactors = F
+                      )
+
+
+dist <- c(44,45,46,47,48,49,50,51,52,53,54,503,504)
+for(y in dist){
+  #round1 - Years 1990:1999
+  x <- filter(df.inputs.wages, df.inputs.wages$Dist.Code == y & df.inputs.wages$Year >=1990 & df.inputs.wages$Year <= 1999)
+  
+  x$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.), mean(x$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)
+  
+  x$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.), mean(x$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.)
+
+  x$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.), mean(x$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
+
+  x$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.), mean(x$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
+  
+  test.df <- bind_rows(test.df,x)
+  
+  #round2 - Years 2000:2009
+  x1 <- filter(df.inputs.wages, df.inputs.wages$Dist.Code == y & df.inputs.wages$Year >=2000 & df.inputs.wages$Year <= 2009)
+  
+  x1$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x1$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.), mean(x1$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x1$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)
+  
+  x1$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x1$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.), mean(x1$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x1$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.)
+
+  x1$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x1$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.), mean(x1$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x1$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
+
+  x1$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x1$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.), mean(x1$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x1$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
+  
+  test.df <- bind_rows(test.df,x1)
+  
+   #round3 - Years 2010:2019
+  x2 <- filter(df.inputs.wages, df.inputs.wages$Dist.Code == y & df.inputs.wages$Year >=2010 & df.inputs.wages$Year <= 2019)
+  
+  x2$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x2$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.), mean(x2$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x2$DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day.)
+  
+  x2$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x2$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.), mean(x2$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x2$DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day.)
+
+  x2$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x2$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.), mean(x2$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x2$STATE.MALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
+
+  x2$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day. <- ifelse( is.na(x2$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.), mean(x2$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.,na.rm = T),x2$STATE.FEMALE.AVERAGE.FIELD.LABOUR..Rs.per.Day.)
+  
+  test.df <- bind_rows(test.df,x2)
+  
+}
+
+df.inputs.wages <- test.df
+#removing test.df from environment
+rm(test.df)
+rm(x)
+rm(x1)
+rm(x2)
+```
+
+Now handling missing values of df.inputs.season.fertilizer.consumption
+
+```{r}
+#replace -1 by NA
+
+df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. <-
+  ifelse(df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$NITROGEN.KHARIF.CONSUMPTION..tons.)
+
+df.inputs.season.fertilizer.consumption$NITROGEN.RABI.CONSUMPTION..tons.<-
+  ifelse(df.inputs.season.fertilizer.consumption$NITROGEN.RABI.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$NITROGEN.RABI.CONSUMPTION..tons.)
+
+
+df.inputs.season.fertilizer.consumption$PHOSPHATE.KHARIF.CONSUMPTION..tons. <-
+  ifelse(df.inputs.season.fertilizer.consumption$PHOSPHATE.KHARIF.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$PHOSPHATE.KHARIF.CONSUMPTION..tons.)
+
+
+df.inputs.season.fertilizer.consumption$PHOSPHATE.RABI.CONSUMPTION..tons. <-
+  ifelse(df.inputs.season.fertilizer.consumption$PHOSPHATE.RABI.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$PHOSPHATE.RABI.CONSUMPTION..tons.)
+
+
+df.inputs.season.fertilizer.consumption$POTASH.KHARIF.CONSUMPTION..tons. <-
+  ifelse(df.inputs.season.fertilizer.consumption$POTASH.KHARIF.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$POTASH.KHARIF.CONSUMPTION..tons.)
+
+
+df.inputs.season.fertilizer.consumption$POTASH.RABI.CONSUMPTION..tons. <-
+  ifelse(df.inputs.season.fertilizer.consumption$POTASH.RABI.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$POTASH.RABI.CONSUMPTION..tons.)
+
+
+df.inputs.season.fertilizer.consumption$TOTAL.KHARIF.CONSUMPTION..tons. <-
+  ifelse(df.inputs.season.fertilizer.consumption$TOTAL.KHARIF.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$TOTAL.KHARIF.CONSUMPTION..tons.)
+
+
+df.inputs.season.fertilizer.consumption$TOTAL.RABI.CONSUMPTION..tons. <-
+  ifelse(df.inputs.season.fertilizer.consumption$TOTAL.RABI.CONSUMPTION..tons. == -1,NA,df.inputs.season.fertilizer.consumption$TOTAL.RABI.CONSUMPTION..tons.)
+
+
+#create a test data frame with 0 rows and 13 columns
+test.df <- data.frame(Dist.Code = integer(),
+                      Year = integer(),
+                      State.Code = integer(),
+                      State.Name = character(),
+                      Dist.Name = character(),
+                      NITROGEN.KHARIF.CONSUMPTION..tons. = double(),
+                      NITROGEN.RABI.CONSUMPTION..tons. = double(),
+                      PHOSPHATE.KHARIF.CONSUMPTION..tons. = double(),
+                      PHOSPHATE.RABI.CONSUMPTION..tons. = double(),
+                      POTASH.KHARIF.CONSUMPTION..tons. = double(),
+                      POTASH.RABI.CONSUMPTION..tons. = double(),
+                      TOTAL.KHARIF.CONSUMPTION..tons. = double(),
+                      TOTAL.RABI.CONSUMPTION..tons. = double(),
+                      stringsAsFactors = F
+                      )
+
+dist <- c(44,45,46,47,48,49,50,51,52,53,54,503,504)
+for(y in dist){
+  # here we only have missing data for 1998 & 1999
+  #round1 - 1990:1999
+  x <- filter(df.inputs.season.fertilizer.consumption, df.inputs.season.fertilizer.consumption$Dist.Code == y & df.inputs.season.fertilizer.consumption$Year >=1990 & df.inputs.season.fertilizer.consumption$Year <= 1999)
+  
+  x$NITROGEN.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x$NITROGEN.KHARIF.CONSUMPTION..tons.), mean(x$NITROGEN.KHARIF.CONSUMPTION..tons.,na.rm = T),x$NITROGEN.KHARIF.CONSUMPTION..tons.)
+  
+  x$NITROGEN.RABI.CONSUMPTION..tons. <- ifelse( is.na(x$NITROGEN.RABI.CONSUMPTION..tons.), mean(x$NITROGEN.RABI.CONSUMPTION..tons.,na.rm = T),x$NITROGEN.RABI.CONSUMPTION..tons.)
+
+  x$PHOSPHATE.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x$PHOSPHATE.KHARIF.CONSUMPTION..tons.), mean(x$PHOSPHATE.KHARIF.CONSUMPTION..tons.,na.rm = T),x$PHOSPHATE.KHARIF.CONSUMPTION..tons.)
+
+  x$PHOSPHATE.RABI.CONSUMPTION..tons. <- ifelse( is.na(x$PHOSPHATE.RABI.CONSUMPTION..tons.), mean(x$PHOSPHATE.RABI.CONSUMPTION..tons.,na.rm = T),x$PHOSPHATE.RABI.CONSUMPTION..tons.)
+   
+  x$POTASH.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x$POTASH.KHARIF.CONSUMPTION..tons.), mean(x$POTASH.KHARIF.CONSUMPTION..tons.,na.rm = T),x$POTASH.KHARIF.CONSUMPTION..tons.)
+
+  x$POTASH.RABI.CONSUMPTION..tons. <- ifelse( is.na(x$POTASH.RABI.CONSUMPTION..tons.), mean(x$POTASH.RABI.CONSUMPTION..tons.,na.rm = T),x$POTASH.RABI.CONSUMPTION..tons.)
+
+  x$TOTAL.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x$TOTAL.KHARIF.CONSUMPTION..tons.), mean(x$TOTAL.KHARIF.CONSUMPTION..tons.,na.rm = T),x$TOTAL.KHARIF.CONSUMPTION..tons.)
+  
+    x$TOTAL.RABI.CONSUMPTION..tons. <- ifelse( is.na(x$TOTAL.RABI.CONSUMPTION..tons.), mean(x$TOTAL.RABI.CONSUMPTION..tons.,na.rm = T),x$TOTAL.RABI.CONSUMPTION..tons.)
+  
+  test.df <- bind_rows(test.df,x)
+  #round2 - 2000:2009
+   x1 <- filter(df.inputs.season.fertilizer.consumption, df.inputs.season.fertilizer.consumption$Dist.Code == y & df.inputs.season.fertilizer.consumption$Year >=2000 & df.inputs.season.fertilizer.consumption$Year <= 2009)
+  
+  x1$NITROGEN.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x1$NITROGEN.KHARIF.CONSUMPTION..tons.), mean(x1$NITROGEN.KHARIF.CONSUMPTION..tons.,na.rm = T),x1$NITROGEN.KHARIF.CONSUMPTION..tons.)
+  
+  x1$NITROGEN.RABI.CONSUMPTION..tons. <- ifelse( is.na(x1$NITROGEN.RABI.CONSUMPTION..tons.), mean(x1$NITROGEN.RABI.CONSUMPTION..tons.,na.rm = T),x1$NITROGEN.RABI.CONSUMPTION..tons.)
+
+  x1$PHOSPHATE.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x1$PHOSPHATE.KHARIF.CONSUMPTION..tons.), mean(x1$PHOSPHATE.KHARIF.CONSUMPTION..tons.,na.rm = T),x1$PHOSPHATE.KHARIF.CONSUMPTION..tons.)
+
+  x1$PHOSPHATE.RABI.CONSUMPTION..tons. <- ifelse( is.na(x1$PHOSPHATE.RABI.CONSUMPTION..tons.), mean(x1$PHOSPHATE.RABI.CONSUMPTION..tons.,na.rm = T),x1$PHOSPHATE.RABI.CONSUMPTION..tons.)
+   
+  x1$POTASH.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x1$POTASH.KHARIF.CONSUMPTION..tons.), mean(x1$POTASH.KHARIF.CONSUMPTION..tons.,na.rm = T),x1$POTASH.KHARIF.CONSUMPTION..tons.)
+
+  x1$POTASH.RABI.CONSUMPTION..tons. <- ifelse( is.na(x1$POTASH.RABI.CONSUMPTION..tons.), mean(x1$POTASH.RABI.CONSUMPTION..tons.,na.rm = T),x1$POTASH.RABI.CONSUMPTION..tons.)
+
+  x1$TOTAL.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x1$TOTAL.KHARIF.CONSUMPTION..tons.), mean(x1$TOTAL.KHARIF.CONSUMPTION..tons.,na.rm = T),x1$TOTAL.KHARIF.CONSUMPTION..tons.)
+  
+    x1$TOTAL.RABI.CONSUMPTION..tons. <- ifelse( is.na(x1$TOTAL.RABI.CONSUMPTION..tons.), mean(x1$TOTAL.RABI.CONSUMPTION..tons.,na.rm = T),x1$TOTAL.RABI.CONSUMPTION..tons.)
+  
+  test.df <- bind_rows(test.df,x1)
+  #round3 - 2010:2019
+   x2 <- filter(df.inputs.season.fertilizer.consumption, df.inputs.season.fertilizer.consumption$Dist.Code == y & df.inputs.season.fertilizer.consumption$Year >=2010 & df.inputs.season.fertilizer.consumption$Year <= 2019)
+  
+  x2$NITROGEN.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x2$NITROGEN.KHARIF.CONSUMPTION..tons.), mean(x2$NITROGEN.KHARIF.CONSUMPTION..tons.,na.rm = T),x2$NITROGEN.KHARIF.CONSUMPTION..tons.)
+  
+  x2$NITROGEN.RABI.CONSUMPTION..tons. <- ifelse( is.na(x2$NITROGEN.RABI.CONSUMPTION..tons.), mean(x2$NITROGEN.RABI.CONSUMPTION..tons.,na.rm = T),x2$NITROGEN.RABI.CONSUMPTION..tons.)
+
+  x2$PHOSPHATE.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x2$PHOSPHATE.KHARIF.CONSUMPTION..tons.), mean(x2$PHOSPHATE.KHARIF.CONSUMPTION..tons.,na.rm = T),x2$PHOSPHATE.KHARIF.CONSUMPTION..tons.)
+
+  x2$PHOSPHATE.RABI.CONSUMPTION..tons. <- ifelse( is.na(x2$PHOSPHATE.RABI.CONSUMPTION..tons.), mean(x2$PHOSPHATE.RABI.CONSUMPTION..tons.,na.rm = T),x2$PHOSPHATE.RABI.CONSUMPTION..tons.)
+   
+  x2$POTASH.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x2$POTASH.KHARIF.CONSUMPTION..tons.), mean(x2$POTASH.KHARIF.CONSUMPTION..tons.,na.rm = T),x2$POTASH.KHARIF.CONSUMPTION..tons.)
+
+  x2$POTASH.RABI.CONSUMPTION..tons. <- ifelse( is.na(x2$POTASH.RABI.CONSUMPTION..tons.), mean(x2$POTASH.RABI.CONSUMPTION..tons.,na.rm = T),x2$POTASH.RABI.CONSUMPTION..tons.)
+
+  x2$TOTAL.KHARIF.CONSUMPTION..tons. <- ifelse( is.na(x2$TOTAL.KHARIF.CONSUMPTION..tons.), mean(x2$TOTAL.KHARIF.CONSUMPTION..tons.,na.rm = T),x2$TOTAL.KHARIF.CONSUMPTION..tons.)
+  
+    x2$TOTAL.RABI.CONSUMPTION..tons. <- ifelse( is.na(x2$TOTAL.RABI.CONSUMPTION..tons.), mean(x2$TOTAL.RABI.CONSUMPTION..tons.,na.rm = T),x2$TOTAL.RABI.CONSUMPTION..tons.)
+  
+  test.df <- bind_rows(test.df,x2)
+}
+
+df.inputs.season.fertilizer.consumption <- test.df
+#removing test.df from environment
+rm(test.df)
+rm(x)
+rm(x1)
+rm(x2)
 
 ```
+
 
 
 Since there are many columns in dataset, we like to reduce some redundant columns by talking average of months by general agricultural seasons in India.
@@ -169,7 +470,7 @@ But now for analysis reasons, we consider Rabi to be only November to February.
 
 
 ```{r}
-#calculating means 
+#calculating means of columns and created 3 new columns.
 #df.biophysical.monthly.rainfall
 df.biophysical.monthly.rainfall$Zaid.rainfall.mm <- rowMeans(df.biophysical.monthly.rainfall[,c("MARCH.RAINFALL..Millimeters.","APRIL.RAINFALL..Millimeters.","MAY.RAINFALL..Millimeters.","JUNE.RAINFALL..Millimeters.")])
 df.biophysical.monthly.rainfall$Kharif.rainfall.mm <- rowMeans(df.biophysical.monthly.rainfall[,c("JULY.RAINFALL..Millimeters.","AUGUST.RAINFALL..Millimeters.","SEPTEMBER.RAINFALL..Millimeters.","OCTOBER.RAINFALL..Millimeters.")])
@@ -276,9 +577,7 @@ df.rice.area.production.yield <- scaling.fn(df.rice.area.production.yield)
 
 
 #these only have 4 columns in total so our custom funciton does not work. so we do it manually.
-# df.biophysical.length.of.growing.period <- scaling.fn(df.biophysical.length.of.growing.period)
-#df.irrigation.rice.area <- scaling.fn(df.irrigation.rice.area)
-#df.rice.farm.harvest.price <- scaling.fn(df.rice.farm.harvest.price)
+
 
 df.biophysical.length.of.growing.period$LENGTH.OF.GROWING.PERIOD.DAYS..Number. <- scale(df.biophysical.length.of.growing.period$LENGTH.OF.GROWING.PERIOD.DAYS..Number.)
 
@@ -289,27 +588,6 @@ df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- scale(df.rice
 ```
 
 
-
-Now 1995,1996 years is not available in df.inputs.wages
-
-```{r}
-# first I will add the known data to the df. i.e., dist.code, state.code and year. 
-#later I can easly fill these NAs with respective averages.
-
-# Dist.Code <- rep(c(44,45,46,47,48,49,50,51,52,53,54,503,504),times = 1, each = 2)
-# 
-# State.Code <- rep(c(1),times = 26)
-# Year <- rep(c(1995,1996),times = 13)
-# test.df <- data.frame(Dist.Code,Year,State.Code)
-# test.df
-# 
-# #bind_rows from dplyr package auto fills NAs
-# df.inputs.wages <- bind_rows(df.inputs.wages,test.df)
-# 
-# df.inputs.wages <- ifelse()
-
-
-```
 
 
 Now that our datasets are ready, we will try to combine all those data sets to a single DF.
@@ -343,11 +621,18 @@ df.all <- full_join(combine14,df.biophysical.soil.type1,by = c("Dist.Code","Stat
 ```
 Initially, our final dataframe consists of 884 observations with 137 predictors.
 But by taking averages of columns season-wise, and deleting repeated columns(columns after taking averages), we reduced predictors from 137 to 80 and 780 observations.
-By taking data starting from years 1990 we reduced no.of observations from 780 to 364. Maximum NAs have been produced by the only reason that 5 tables were starting from 1950's while every other table is starting from 1990.
+By taking data starting from years 1990 we reduced no.of observations from 780 to 364.
+After ahndling NAs,our observations got down to 338.
 
+Maximum NAs have been produced by the only reason that 5 tables were starting from 1950's while every other table is starting from 1990.
 
+After handling NULL values, 
+Now after checking df.all we have 2 null values in df.rice.farm.price-paddy for 503,504(1995).
+and
+26 NUll values in wages for all districts for years(2010,2011)
 
-Now 1995,1996 years is not available in df.inputs.wages
+These are not present before, they are formed during joins. need to check joins individually.
+
 
 
 
@@ -379,7 +664,7 @@ summary(df.all)
 
 #TODO
 #Feature engineering / reduction of predictors
-#There are NAs added due to joins, remove them from df.all - {work on wages dataset 95,96 years}
+#There are NAs added due to joins, remove them from df.all - {Check each join at a time.}
 #Find correlation
 #further reduce predictors
 #build model
