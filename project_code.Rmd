@@ -715,9 +715,9 @@ summary
 #TODO
 
 #Feature engineering / reduction of predictors
-#Find correlation
+
 #further reduce predictors
-#build model
+#build model - lm & random forest - lasso
 
 
 finidng corelation
@@ -744,6 +744,9 @@ data.train <- df.all[data.sample ==1,]
 data.test <- df.all[data.sample ==2,]
 
 model.all <- lm(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)
+#summary(model.all)
+#our model.all with all predictor variables gave an Adjusted r-squared value of 0.9772
+#but our fwdfit.aic model gave Adjusted R-squared vlaues of 0.9765 with only 19 predictors
 
 fwdfit.aic <- ols_step_forward_aic(model.all)
 #summary of model
@@ -755,6 +758,7 @@ fwdfit.aic$model
 summary(fwdfit.aic$model)
 
 ```
+Our model with AIC slection has got an Adjusted R-squared vlaues of 0.9765 which indicates a very good model.
 
 #testing model
 ```{r}
@@ -767,6 +771,12 @@ prediction.test <- predict(fwdfit.aic$model,newdata = data.test)
 testing.df1 <- data.test%>% mutate(pred.reg.test = prediction.test)
 plot(testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,testing.df1$pred.reg.test,main = "Actual vs Predicted values: Test data",xlab = "Actual data",ylab = "Predicted data")
 
+
+#Calculating RMSE
+RMSE.train <- sqrt(mean((training.df1$pred.reg.train-training.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.)^2))
+RMSE.train
+RMSE.test <- sqrt(mean((testing.df1$pred.reg.test-testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.)^2))
+RMSE.test
 ```
 As we can see, our model predicted almost correct results.
 
@@ -784,3 +794,47 @@ plot(fwdfit.aic$aics,main = "AIC vs Predictor",xlab = "Predictor",ylab = "AIC")
 plot(fwdfit.aic$rss,main = "Regression SS vs Predictor",xlab = "Predictor",ylab = "Regression SS")
 ```
 
+#now we will try to do model selction using lasso.
+```{r}
+library(glmnet)
+
+# y = data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal.
+# x = data.train%>% dplyr::select(-c(PADDY.HARVEST.PRICE..Rs.per.Quintal.))
+# x = model.matrix(x)
+#perform k-fold cross-validation to find optimal lambda value
+cv_model <- cv.glmnet(x,y, alpha = 1)
+cv_model <- cv.glmnet(model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)[,-6],data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal.,alpha = 1)
+
+summary(cv_model)
+
+#find optimal lambda value that minimizes test MSE
+best_lambda <- cv_model$lambda.min
+best_lambda
+
+
+
+#produce plot of test MSE by lambda value
+plot(cv_model) 
+
+#find coefficients of best model
+best_model <- glmnet(model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)[,-6],data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal., alpha = 1, lambda = best_lambda)
+
+coef(best_model)
+summary(best_model)
+```
+#testing lasso
+```{r}
+#use lasso regression model to predict response value
+
+prediction.test.lasso <- predict(best_model,s=best_lambda,newx = model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.test)[,-6])
+
+prediction.test.lasso
+
+#RMSE
+RMSE.test.lasso <- sqrt(mean((data.test$PADDY.HARVEST.PRICE..Rs.per.Quintal. - prediction.test.lasso)^2))
+
+RMSE.test.lasso
+```
+
+#Conclusion:
+Our test RMSE for AIC model is  0.1710452, our test RMSE for Lasso model is  0.1547849
