@@ -660,6 +660,9 @@ combine13 <- full_join(combine12,df.biophysical.landuse,by = c("Dist.Code","Stat
 combine14 <- full_join(combine13,df.biophysical.length.of.growing.period,by = c("Dist.Code","State.Code"))
 df.all <- full_join(combine14,df.biophysical.soil.type1,by = c("Dist.Code","State.Code"))
 
+#dropping Year and Year.y and State.Code(because we only have one state)
+df.all = subset(df.all, select = -c(Year,Year.y,State.Code))
+
 ```
 
 
@@ -692,12 +695,7 @@ These are not present before, they are formed during joins. need to check joins 
 #factorising
 df.all$Dist.Code <- as.factor(df.all$Dist.Code)
 df.all$Year.x <- as.factor(df.all$Year.x)
-df.all$State.Code <- as.factor(df.all$State.Code)
-#df.all$State.Name <- as.factor(df.all$State.Name)
-#df.all$Dist.Name <- as.factor(df.all$Dist.Name)
-#df.all$Year <- as.factor(df.all$Year)
-#df.all$Year.y <- as.factor(df.all$Year.y)
-#df.all$LENGTH.OF.GROWING.PERIOD.DAYS..Number. <- as.numeric(df.all$LENGTH.OF.GROWING.PERIOD.DAYS..Number.)
+#df.all$State.Code <- as.factor(df.all$State.Code)
 
 ```
 
@@ -706,15 +704,16 @@ summary
 
 ```{r}
 
-str(df.all)
+#str(df.all)
 
-summary(df.all)
+#summary(df.all)
 
 ```
 
 
 
 #TODO
+
 #Feature engineering / reduction of predictors
 #Find correlation
 #further reduce predictors
@@ -722,45 +721,66 @@ summary(df.all)
 
 
 finidng corelation
-
+This below chunk is cannot give accurate results because of too many variables.
 ```{r}
-library(caret)
-library(corrplot)
-corMatrix <- cor(df.all)
-corrplot(corMatrix)
+# library(caret)
+# library(corrplot)
+# corMatrix <- cor(df.all)
+# corrplot(corMatrix)
 ```
 
 
-```{r}
-#https://towardsdatascience.com/how-to-create-a-correlation-matrix-with-too-many-variables-309cc0c0a57
 
-corr_simple <- function(data=df.all,sig=0.5){
-  #convert data to numeric in order to run correlations
-  #convert to factor first to keep the integrity of the data - each value will become a number rather than turn into NA
-  df_cor <- data %>% mutate_if(is.character, as.factor)
-  df_cor <- df_cor %>% mutate_if(is.factor, as.numeric)
-  #run a correlation and drop the insignificant ones
-  corr <- cor(df_cor)
-  #prepare to drop duplicates and correlations of 1     
-  corr[lower.tri(corr,diag=TRUE)] <- NA 
-  #drop perfect correlations
-  corr[corr == 1] <- NA 
-  #turn into a 3-column table
-  corr <- as.data.frame(as.table(corr))
-  #remove the NA values from above 
-  corr <- na.omit(corr) 
-  #select significant values  
-  corr <- subset(corr, abs(Freq) > sig) 
-  #sort by highest correlation
-  corr <- corr[order(-abs(corr$Freq)),] 
-  #print table
-  print(corr)
-  #turn corr back into matrix in order to plot with corrplot
-  mtx_corr <- reshape2::acast(corr, Var1~Var2, value.var="Freq")
-  
-  #plot correlations visually
-  corrplot(mtx_corr, is.corr=FALSE, tl.col="black", na.label=" ")
-}
-corr_simple()
+Model selection/ variable selection.
+
+We will use AIC and forward prediction because AIC will helps us to prevent overfitting.
+
+```{r}
+library(olsrr)
+set.seed(108)
+
+data.sample <- sample(2,nrow(df.all),replace = T, prob = c(0.8,0.2))
+data.train <- df.all[data.sample ==1,]
+data.test <- df.all[data.sample ==2,]
+
+model.all <- lm(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)
+
+fwdfit.aic <- ols_step_forward_aic(model.all)
+#summary of model
+fwdfit.aic
+
+#final model
+fwdfit.aic$model
+
+summary(fwdfit.aic$model)
+
+```
+
+#testing model
+```{r}
+#training predictions
+prediction.train <- predict(fwdfit.aic$model,newdata = data.train)
+training.df1 <- data.train%>% mutate(pred.reg.train = prediction.train)
+plot(training.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,training.df1$pred.reg.train,main = "Actual vs Predicted values: Train data",xlab = "Actual data",ylab = "Predicted data")
+#testing predictions
+prediction.test <- predict(fwdfit.aic$model,newdata = data.test)
+testing.df1 <- data.test%>% mutate(pred.reg.test = prediction.test)
+plot(testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,testing.df1$pred.reg.test,main = "Actual vs Predicted values: Test data",xlab = "Actual data",ylab = "Predicted data")
+
+```
+As we can see, our model predicted almost correct results.
+
+#graphs
+```{r}
+#plot
+plot(fwdfit.aic)
+#plotting final model characteristics
+plot(fwdfit.aic$model)
+#plotting final model residuals.
+plot(fwdfit.aic$ess,main = "Residuals SS vs Predictor",xlab = "Predictor",ylab = "Residuals SS")
+plot(fwdfit.aic$rsq,main = "R-squared vs Predictor",xlab = "Predictor",ylab = "R-squared")
+plot(fwdfit.aic$arsq,main = "Adjusted R-squared vs Predictor",xlab = "Predictor",ylab = "Adjusted R-squared")
+plot(fwdfit.aic$aics,main = "AIC vs Predictor",xlab = "Predictor",ylab = "AIC")
+plot(fwdfit.aic$rss,main = "Regression SS vs Predictor",xlab = "Predictor",ylab = "Regression SS")
 ```
 
