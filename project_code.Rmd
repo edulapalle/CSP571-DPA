@@ -838,3 +838,14 @@ RMSE.test.lasso
 
 #Conclusion:
 Our test RMSE for AIC model is  0.1710452, our test RMSE for Lasso model is  0.1547849
+
+#coefficeints of lasso
+```{r}
+coef.lasso<- predict(best_model,type = "coefficients",s= best_lambda)
+coef.lasso
+
+#coeffs of full model  \beta
+coef(model.all)
+```
+#conclusion:
+We an clearly see that compared to the linear fit, our Lasso Regularization has shrinked the coefficients and we can also notice that most of them are shrinked to almost zero.
