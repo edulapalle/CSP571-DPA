@@ -11,59 +11,46 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 We will use this markdown file to code our project and write any relevant updates.
-```{r}
-print("Hello World!")
-```
-
-
-
 
 
 $\textbf{Loading datasets}$
 
 ```{r}
-df.rice.farm.harvest.price <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Rice_farm_harvest_price.csv")
+df.rice.farm.harvest.price <- read.csv(unz("Datasets.zip","Datasets/Rice_farm_harvest_price.csv"))
 
+df.rice.area.production.yield <- read.csv(unz("Datasets.zip","Datasets/Rice_area_production_yield.csv"))
 
-df.rice.area.production.yield <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Rice_area_production_yield.csv")
+df.irrigation.sourcewise.irrigated.area <- read.csv(unz("Datasets.zip","Datasets/Irrigation_sourcewise_irrigated_area.csv"))
 
+df.irrigation.rice.area <- read.csv(unz("Datasets.zip","Datasets/Irrigation_rice_area.csv"))
 
-df.irrigation.sourcewise.irrigated.area <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Irrigation_sourcewise_irrigated_area.csv")
+df.inputs.wages <- read.csv(unz("Datasets.zip","Datasets/Inputs_wages.csv"))
 
+df.inputs.season.fertilizer.consumption <- read.csv(unz("Datasets.zip","Datasets/Inputs_season_fertilizer_consumption.csv"))
 
-df.irrigation.rice.area <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Irrigation_rice_area.csv")
+df.inputs.fertilizer.consumption <- read.csv(unz("Datasets.zip","Datasets/Inputs_fertilizer_consumption.csv"))
 
+df.environment.temperature.minimum <- read.csv(unz("Datasets.zip","Datasets/Environment_temperature_minimum*.csv"))
 
-df.inputs.wages <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Inputs_wages.csv")
+df.environment.temperature.maximum <- read.csv(unz("Datasets.zip","Datasets/Environment_temperature_maximum*.csv"))
 
+df.environment.precipitation <- read.csv(unz("Datasets.zip","Datasets/Environment_precipitation*.csv"))
 
-df.inputs.season.fertilizer.consumption <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Inputs_season_fertilizer_consumption.csv")
+df.environment.evapotranspiration.potential <- read.csv(unz("Datasets.zip","Datasets/Environment_evapotranspiration_potential*.csv"))
 
+df.environment.evapotranspiration.actual <- read.csv(unz("Datasets.zip","Datasets/Environment_evapotranspiration_actual*.csv"))
 
-df.inputs.fertilizer.consumption <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Inputs_fertilizer_consumption.csv")
+df.biophysical.soil.type1 <- read.csv(unz("Datasets.zip","Datasets/Biophysical_soil_type.csv"))
 
-df.environment.temperature.minimum <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_temperature_minimum*.csv")
+df.biophysical.monthly.rainfall <- read.csv(unz("Datasets.zip","Datasets/Biophysical_monthly_rainfall.csv"))
 
-df.environment.temperature.maximum <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_temperature_maximum*.csv")
+df.biophysical.length.of.growing.period <- read.csv(unz("Datasets.zip","Datasets/Biophysical_length_of_growing_period.csv"))
 
-df.environment.precipitation <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_precipitation*.csv")
-
-df.environment.evapotranspiration.potential <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_evapotranspiration_potential*.csv")
-
-df.environment.evapotranspiration.actual <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Environment_evapotranspiration_actual*.csv")
-
-df.biophysical.soil.type1 <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_soil_type.csv")
-
-df.biophysical.monthly.rainfall <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_monthly_rainfall.csv")
-
-df.biophysical.length.of.growing.period <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_length_of_growing_period.csv")
-
-df.biophysical.landuse <- read.csv("/Users/santosh/Documents/CSP571/CSP571-DPA/Datasets/Biophysical_landuse.csv")
-
+df.biophysical.landuse <- read.csv(unz("Datasets.zip","Datasets/Biophysical_landuse.csv"))
 
 ```
 
-Initillay, district codes 503,504 were missing in some tables becuase these districts are formed after state division. So, a lot of NAs were formed while performing joins. Now we gathered latest possible information for all data sets.
+Initially, district codes 503,504 were missing in some tables becuase these districts are formed after state division. So, a lot of NAs were formed while performing joins. Now we gathered latest possible information for all data sets.
 
 $\textbf{Deleting rows < 1990}$
 
@@ -145,7 +132,7 @@ Additionally, we did not have districts 503,504 for few tables, so we got new an
 2. Now we are taking summaries of all tables, and checking if any table has min:-1, so we are handling those specific columns by performing mean of each district in that specific year gap ( 10 year average for missing districts using filter())
 
 3. After doing step1,2 and combining the tables, we still got few NAs after checking summary of each join, we found that - 
-df.rice.fram .price table has 2 missing values for district 503,504 for year 1995. and this was not coded as -1. Instead it is completely missing.
+df.rice.farm.price table has 2 missing values for district 503,504 for year 1995. and this was not coded as -1. Instead it is completely missing.
 same case for df.input.wages for all districts for years 2010,2011.
 
 df.irrigation.sourcewise.irrigated.area$OTHER.WELLS.AREA..1000.ha. = has missing values for districts 50,51 for years 2007.
