@@ -1,6 +1,11 @@
 ---
-title: "Project"
-author: "Santosh Reddy Edulapalle"
+title: 
+- CSP571 DPA Project
+- Prediction of Rice price per distrcit in Andhra Pradesh
+author: 
+- Santosh Reddy Edulapalle
+- Jobin Joyson
+- Venkata Siva Rupesh Akurati
 date: "2022-11-07"
 output: html_document
 ---
@@ -699,16 +704,10 @@ summary
 
 
 
-#TODO
-
-#Feature engineering / reduction of predictors
-
-#further reduce predictors
-#build model - lm & random forest - lasso
 
 
 finidng corelation
-This below chunk is cannot give accurate results because of too many variables.
+because of too many variables, we could not find this correlation to be much usefull.
 ```{r}
 # library(caret)
 # library(corrplot)
