@@ -785,11 +785,7 @@ plot(fwdfit.aic$rss,main = "Regression SS vs Predictor",xlab = "Predictor",ylab 
 ```{r}
 library(glmnet)
 
-# y = data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal.
-# x = data.train%>% dplyr::select(-c(PADDY.HARVEST.PRICE..Rs.per.Quintal.))
-# x = model.matrix(x)
 #perform k-fold cross-validation to find optimal lambda value
-cv_model <- cv.glmnet(x,y, alpha = 1)
 cv_model <- cv.glmnet(model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)[,-6],data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal.,alpha = 1)
 
 summary(cv_model)
