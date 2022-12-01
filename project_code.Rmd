@@ -716,9 +716,77 @@ This below chunk is cannot give accurate results because of too many variables.
 # corrplot(corMatrix)
 ```
 
+## Data Visualization
+
+```{r}
+library(ggplot2)
+library(ggsci)
+ggplot(data = df.all, aes(x = Year.x, y = PADDY.HARVEST.PRICE..Rs.per.Quintal., group = Dist.Code, col = Dist.Code)) +
+  geom_point() +
+  geom_line() +
+  theme_classic(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 90))+
+  ylab("Rice Farm Harvest Price (Rs.)") + 
+  xlab("Year") +
+  ggtitle("Rice FHP in Andhra Pradesh by Year and District")
+
+```
+Increase in harvest price can be due to inflation. However major changes in price occurred between 2010 and 2015.
+
+Now lets look at how production of rice has been over the years:
+
+```{r}
+ggplot(data = df.all, aes(x = Year.x, y = RICE.PRODUCTION..1000.tons., group = Dist.Code, col = Dist.Code)) +
+  geom_point() +
+  geom_line() +
+  theme_classic(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 90))+
+  ylab("Rice Production (1000 tons)") + 
+  xlab("Year") +
+  ggtitle("Rice Production in Andhra Pradesh by Year and District")
+```
+
+```{r}
+ggplot(data = df.all, aes(x = Year.x, y = RICE.YIELD..Kg.per.ha., group = Dist.Code, col = Dist.Code)) +
+  geom_point() +
+  geom_line() +
+  theme_classic(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 90))+
+  ylab("Rice Yield (kg/Ha)") + 
+  xlab("Year") +
+  ggtitle("Rice Yield in Andhra Pradesh by Year and District")
+```
+
+Despite some major dips across the districts in rice production during the early 2000s, the production of rice seems to be mostly the same throughout the years. This could mean two things: the increase in price of the years could be due to inflation as we had originally assumed, or there were other factors that played a more significant role in increasing the prices. Judging by the data we have at hand, most variables play a role into the production of rice. The possible predictors that can influence price greatly outside of rice production would be the wages for each worker. 
+
+Lets take a look at how the wages have changed per district across the years:
+
+```{r}
+ggplot(data = df.all, aes(x = Year.x, y = DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day., group = Dist.Code, color = Dist.Code)) +
+  geom_point() +
+  geom_line() +
+  theme_classic(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 90))+
+  ylab("Male Labor Wages (Rs. per day)") + 
+  xlab("Year") +
+  ggtitle("Male Labor Wages by Year and District")
+```
+```{r}
+ggplot(data = df.all, aes(x = Year.x, y = DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day., group = Dist.Code, color = Dist.Code)) +
+  geom_point() +
+  geom_line() +
+  theme_classic(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 90))+
+  ylab("Female Labor Wages (Rs. per day)") + 
+  xlab("Year") +
+  ggtitle("Female Labor Wages by Year and District")
+```
+As we can see from the visuals, the wages for the workers have increased steadily until 2007. From 2008-2015 the wages have increased rapidly. This reflects what we saw with the price of harvest as well. This makes intuitive sense because as the cost of workers go up, the prices the farmers charge will reflect that. This further supports our initial assumption of inflation playing a key factor in the increase of rice harvest prices. Now that we have a general idea of the data, we can go into the statistics of the data and see what features play a role in price that we cannot see so easily.
 
 
-Model selection/ variable selection.
+
+
+Model selection/variable selection.
 
 We will use AIC and forward prediction because AIC will helps us to prevent overfitting.
 
@@ -830,5 +898,7 @@ coef.lasso
 #coeffs of full model  \beta
 coef(model.all)
 ```
+
+
 #conclusion:
 We an clearly see that compared to the linear fit, our Lasso Regularization has shrinked the coefficients and we can also notice that most of them are shrinked to almost zero.
