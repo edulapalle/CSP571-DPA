@@ -902,3 +902,9 @@ coef(model.all)
 We an clearly see that compared to the linear fit, our Lasso Regularization has shrinked the coefficients and we can also notice that most of them are shrinked to almost zero.
 
 
+#TODO
+
+split the data to train(<2010) and test( >2010)
+create 2 models for aic and lasso with the features they provided.
+Train the models with train data and test it.
+Document everything*
