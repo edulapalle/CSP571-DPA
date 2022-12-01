@@ -1,7 +1,7 @@
 ---
 title: 
 - CSP571 DPA Project
-- Prediction of Rice price per distrcit in Andhra Pradesh
+- Prediction of Rice price per district in Andhra Pradesh
 author: 
 - Santosh Reddy Edulapalle
 - Jobin Joyson
@@ -15,7 +15,6 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-We will use this markdown file to code our project and write any relevant updates.
 
 
 $\textbf{Loading datasets}$
@@ -901,3 +900,5 @@ coef(model.all)
 
 #conclusion:
 We an clearly see that compared to the linear fit, our Lasso Regularization has shrinked the coefficients and we can also notice that most of them are shrinked to almost zero.
+
+
