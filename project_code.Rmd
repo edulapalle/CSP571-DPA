@@ -789,12 +789,27 @@ Model selection/variable selection.
 We will use AIC and forward prediction because AIC will helps us to prevent overfitting.
 
 ```{r}
+#data splitting.
+#Here we are splitting the data to train and test where we took data from 1990 to 2010 as training data and data from 2010 as testing data, So, technically we are predicting future results.
+
+# test.subset <- c("2011","2012","2013","2014","2015")
+# values <- df.all$Year.x %in% test.subset
+# data.test <- df.all[values,]
+# data.train <- df.all[!values,]
+
+# this test split did not work because - we had taken year as a factor! and when we try to test the model with new data, since our model did not see these factors before, it could not run the model and throwing error.
+
+```
+
+
+```{r}
 library(olsrr)
 set.seed(108)
-
+# 
 data.sample <- sample(2,nrow(df.all),replace = T, prob = c(0.8,0.2))
 data.train <- df.all[data.sample ==1,]
 data.test <- df.all[data.sample ==2,]
+
 
 model.all <- lm(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)
 #summary(model.all)
@@ -836,10 +851,13 @@ As we can see, our model predicted almost correct results.
 #graphs
 ```{r}
 #plot
+
 plot(fwdfit.aic)
 #plotting final model characteristics
+par(mfrow=c(2,2))
 plot(fwdfit.aic$model)
 #plotting final model residuals.
+par(mfrow=c(3,2))
 plot(fwdfit.aic$ess,main = "Residuals SS vs Predictor",xlab = "Predictor",ylab = "Residuals SS")
 plot(fwdfit.aic$rsq,main = "R-squared vs Predictor",xlab = "Predictor",ylab = "R-squared")
 plot(fwdfit.aic$arsq,main = "Adjusted R-squared vs Predictor",xlab = "Predictor",ylab = "Adjusted R-squared")
@@ -901,10 +919,8 @@ coef(model.all)
 #conclusion:
 We an clearly see that compared to the linear fit, our Lasso Regularization has shrinked the coefficients and we can also notice that most of them are shrinked to almost zero.
 
-
 #TODO
+Replace factor for Year as normal year.
+rescale the restuls
 
-split the data to train(<2010) and test( >2010)
-create 2 models for aic and lasso with the features they provided.
-Train the models with train data and test it.
-Document everything*
+
