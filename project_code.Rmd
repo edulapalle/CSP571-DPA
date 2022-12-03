@@ -16,8 +16,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
+# Loading Dataset
 
-$\textbf{Loading datasets}$
 
 ```{r}
 df.rice.farm.harvest.price <- read.csv(unz("Datasets.zip","Datasets/Rice_farm_harvest_price.csv"))
@@ -54,9 +54,12 @@ df.biophysical.landuse <- read.csv(unz("Datasets.zip","Datasets/Biophysical_land
 
 ```
 
-Initially, district codes 503,504 were missing in some tables becuase these districts are formed after state division. So, a lot of NAs were formed while performing joins. Now we gathered latest possible information for all data sets.
 
-$\textbf{Deleting rows < 1990}$
+# Data Processing 
+
+Initially, district codes 503,504 were missing in some tables because these districts are formed after state division. So, a lot of NAs were formed while performing joins. Now we gathered latest possible information for all data sets.
+
+## Deleting rows < 1990
 
 Other than environment, entire data sets starts from 1990. So, to get fair results, we are deleting observations from environment data sets that are recorded in years < 1990.
 
@@ -77,7 +80,7 @@ df.environment.temperature.maximum <- del.1990(df.environment.temperature.maximu
 df.environment.temperature.minimum <- del.1990(df.environment.temperature.minimum)
 ```
 
-$\textbf{Deleting rows > 2015}$
+## Deleting rows > 2015
 
 So, some tables end with 2015 while others end with 2017. Our target table end with Year 2016. So, to get fair results, we are deleting observations from data sets that are recorded in years > 2015.
 
@@ -102,28 +105,8 @@ df.rice.farm.harvest.price <- del.2015(df.rice.farm.harvest.price)
 
 ```
 
-$\textbf{Summary}$
-```{r}
-# summary(df.biophysical.landuse)
-# summary(df.biophysical.length.of.growing.period)
-# summary(df.biophysical.monthly.rainfall)
-# summary(df.biophysical.soil.type1)
-# summary(df.environment.evapotranspiration.actual)
-# summary(df.environment.evapotranspiration.potential)
-# summary(df.environment.precipitation)
-# summary(df.environment.temperature.maximum)
-# summary(df.environment.temperature.minimum)
-# summary(df.inputs.fertilizer.consumption)
-# summary(df.inputs.season.fertilizer.consumption)
-# summary(df.inputs.wages)
-# summary(df.irrigation.rice.area)
-# summary(df.irrigation.sourcewise.irrigated.area)
-# summary(df.rice.area.production.yield)
-# summary(df.rice.farm.harvest.price)
-```
 
-
-$\textbf{Handling missing values.}$
+## Handling missing values
 
 (In the ICRISAT website, we are said that missing values are coded as -1).
 
@@ -148,7 +131,7 @@ Vishakapatnam, East Godavari, West Godavari, Krishna, Guntur, S.P.S.Nellore, Kur
 
 df.inputs.wages --> There are 132 missing values. (almost 25% data is missing)
 
-Now handling NA values for df.irrigation.sourcewise.irrigated.area
+## Handling NA values for df.irrigation.sourcewise.irrigated.area
 
 ```{r}
 library(dplyr)
@@ -200,10 +183,10 @@ rm(x2)
 ```
 
 
-Now handling NA values for df.rice.farm.harvest.price
+## Handling NA values for df.rice.farm.harvest.price
 
 ```{r}
-#Manualy adding 503,504 data
+# Manualy adding 503,504 data
 
 
 test.df1 <- data.frame(Dist.Code = as.numeric(c(504,503)),
@@ -259,7 +242,7 @@ rm(x2)
 ```
 
 
-Now we will handle NA values of df.input.wages
+## Handling NA values of df.input.wages
 
 ```{r}
 
@@ -365,7 +348,7 @@ rm(x1)
 rm(x2)
 ```
 
-Now handling missing values of df.inputs.season.fertilizer.consumption
+## Handling NA values of df.inputs.season.fertilizer.consumption
 
 ```{r}
 #replace -1 by NA
@@ -493,10 +476,14 @@ rm(x2)
 ```
 
 
+## Merging Reductant columns 
 
 Since there are many columns in dataset, we like to reduce some redundant columns by talking average of months by general agricultural seasons in India.
-Kharif - July - October.
+
+Kharif - July - October
+
 Rabi - November - April
+
 Zaid - March - June
 
 But now for analysis reasons, we consider Rabi to be only November to February.
@@ -546,7 +533,9 @@ df.environment.temperature.minimum$Rabi.temp.min.c <- rowMeans(df.environment.te
 
 ```
 
-Deleting all other columns ( January to December) & state name and district name.
+## Deleting columns 
+
+Deleting all other columns ( January to December), state name ,and district name.
 
 ```{r}
 library(dplyr)
@@ -576,52 +565,9 @@ df.biophysical.soil.type1 <- select(df.biophysical.soil.type1,-c("State.Name","D
 
 ```
 
+# Data Transformation 
 
-$\textbf{Normalization : Standard scaling method}$
-
-As we can see from above dataframes, we have each column in different numerical range. Some are in range of 0-100 while some are in range or 10k - 100k.
-So this affects for future analysis, we will bring them to some range.
-scale() is an inbuilt function.
-
-```{r}
-# this function scales the all columns except first 3.
-scaling.fn <- function(df.name){
-  df.name[,4:ncol(df.name)] <- apply(df.name[,4:ncol(df.name)],MARGIN = 2,scale)
-  return(df.name)
-}
-
-
-df.biophysical.landuse <- scaling.fn(df.biophysical.landuse)
-
-df.biophysical.monthly.rainfall <- scaling.fn(df.biophysical.monthly.rainfall)
-df.biophysical.soil.type1 <- scaling.fn(df.biophysical.soil.type1)
-df.environment.evapotranspiration.actual <- scaling.fn(df.environment.evapotranspiration.actual)
-df.environment.evapotranspiration.potential <- scaling.fn(df.environment.evapotranspiration.potential)
-df.environment.precipitation <- scaling.fn(df.environment.precipitation)
-df.environment.temperature.maximum <- scaling.fn(df.environment.temperature.maximum)
-df.environment.temperature.minimum <- scaling.fn(df.environment.temperature.minimum)
-df.inputs.fertilizer.consumption <- scaling.fn(df.inputs.fertilizer.consumption)
-df.inputs.season.fertilizer.consumption <- scaling.fn(df.inputs.season.fertilizer.consumption)
-df.inputs.wages <- scaling.fn(df.inputs.wages)
-
-df.irrigation.sourcewise.irrigated.area <- scaling.fn(df.irrigation.sourcewise.irrigated.area)
-
-df.rice.area.production.yield <- scaling.fn(df.rice.area.production.yield)
-
-
-#these only have 4 columns in total so our custom funciton does not work. so we do it manually.
-
-
-df.biophysical.length.of.growing.period$LENGTH.OF.GROWING.PERIOD.DAYS..Number. <- scale(df.biophysical.length.of.growing.period$LENGTH.OF.GROWING.PERIOD.DAYS..Number.)
-
-df.irrigation.rice.area$RICE.IRRIGATED.AREA..1000.ha. <- scale(df.irrigation.rice.area$RICE.IRRIGATED.AREA..1000.ha.)
-
-df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal. <- scale(df.rice.farm.harvest.price$PADDY.HARVEST.PRICE..Rs.per.Quintal.)
-
-```
-
-
-
+## Merging all data frames
 
 Now that our datasets are ready, we will try to combine all those data sets to a single DF.
 
@@ -656,12 +602,7 @@ df.all = subset(df.all, select = -c(Year,Year.y,State.Code))
 
 ```
 
-
-Summaries
-```{r}
-#summary(combine1)
-```
-
+Data Processing Notes:
 
 Initially, our final dataframe consists of 884 observations with 137 predictors.
 But by taking averages of columns season-wise, and deleting repeated columns(columns after taking averages), we reduced predictors from 137 to 80 and 780 observations.
@@ -679,34 +620,87 @@ All NAs are handled.
 
 These are not present before, they are formed during joins. need to check joins individually.
 
+## Normalization : Standard scaling method
 
+As we can see from above dataframes, we have each column in different numerical range. Some are in range of 0-100 while some are in range or 10k - 100k.
+So this affects for future analysis, we will bring them to some range.
+
+We are using regular scaling method 
+
+$z = \frac{x-\bar{x}}{s}$ to scale
+
+$z = (x\times s)+\bar{x}$ for re-scaling back.
+
+```{r}
+#creating a data frame to hold the values of mean and sd for every column, the same vlaues will be utilised for rescaling 
+
+df.stats <- data.frame(
+  names = character(),
+  m = double(),
+  s = double(),
+  stringsAsFactors = F
+)
+
+# creating statistics function
+stats = function(x){
+  m = mean(x)
+  s = sd(x)
+  return(list(m,s))
+}
+
+#collecting colnames of dataFrame.
+names.list <- names(df.all)
+
+#trying to add col names as rows for new df.
+for (i in names.list){
+  if(i != c("Dist.Code") & i != c("Year.x")){
+    st = stats(unlist(df.all[i]))
+    df.stats[nrow(df.stats)+1,]<- c(i,st[[1]],st[[2]])
+  }
+}
+
+```
+
+```{r}
+#scaling function.
+
+#standardizing
+for (i in names.list){
+  x = 1
+  while(x <= nrow(df.stats)){
+  if(i == df.stats[x,'names']){
+    #print(i)
+    m = df.stats[1,'m']
+    s = df.stats[1,'s']
+    k = unlist(df.all[i])
+    z <- (k - as.numeric(m)) / as.numeric(s)
+    df.all[i] <- z
+  }
+    x = x+1
+  }
+}
+
+
+```
+
+
+## Factorising data
 
 
 ```{r}
 #factorising
 df.all$Dist.Code <- as.factor(df.all$Dist.Code)
-df.all$Year.x <- as.factor(df.all$Year.x)
+#df.all$Year.x <- as.factor(df.all$Year.x)
 #df.all$State.Code <- as.factor(df.all$State.Code)
 
 ```
 
-summary
-
-
-```{r}
-
-#str(df.all)
-
-#summary(df.all)
-
-```
 
 
 
-
-
-finidng corelation
+finding corelation:
 because of too many variables, we could not find this correlation to be much usefull.
+
 ```{r}
 # library(caret)
 # library(corrplot)
@@ -714,7 +708,7 @@ because of too many variables, we could not find this correlation to be much use
 # corrplot(corMatrix)
 ```
 
-## Data Visualization
+# Data Visualization
 
 ```{r}
 library(ggplot2)
@@ -729,6 +723,7 @@ ggplot(data = df.all, aes(x = Year.x, y = PADDY.HARVEST.PRICE..Rs.per.Quintal., 
   ggtitle("Rice FHP in Andhra Pradesh by Year and District")
 
 ```
+
 Increase in harvest price can be due to inflation. However major changes in price occurred between 2010 and 2015.
 
 Now lets look at how production of rice has been over the years:
@@ -769,6 +764,7 @@ ggplot(data = df.all, aes(x = Year.x, y = DISTRICT.MALE.FIELD.LABOUR..Rs.per.Day
   xlab("Year") +
   ggtitle("Male Labor Wages by Year and District")
 ```
+
 ```{r}
 ggplot(data = df.all, aes(x = Year.x, y = DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.Day., group = Dist.Code, color = Dist.Code)) +
   geom_point() +
@@ -779,44 +775,52 @@ ggplot(data = df.all, aes(x = Year.x, y = DISTRICT.FEMALE.FIELD.LABOUR..Rs.per.D
   xlab("Year") +
   ggtitle("Female Labor Wages by Year and District")
 ```
+
 As we can see from the visuals, the wages for the workers have increased steadily until 2007. From 2008-2015 the wages have increased rapidly. This reflects what we saw with the price of harvest as well. This makes intuitive sense because as the cost of workers go up, the prices the farmers charge will reflect that. This further supports our initial assumption of inflation playing a key factor in the increase of rice harvest prices. Now that we have a general idea of the data, we can go into the statistics of the data and see what features play a role in price that we cannot see so easily.
 
 
+# Model building
 
+## Train,Test Split
+
+
+```{r}
+#data splitting.
+
+#Here we are splitting the data to train and test where we took data from 1990 to 2010 as training data and data from 2010 as testing data. 
+
+#So, technically we are predicting future results.
+
+data.train <- df.all[df.all$Year.x <= 2010,]
+data.test <- df.all[df.all$Year.x > 2010,]
+
+
+```
+
+## General Model
+```{r}
+library(olsrr)
+set.seed(108)
+
+#all predictors model
+model.all <- lm(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)
+summary(model.all)
+```
+
+Our model.all with all predictor variables gave an Adjusted r-squared value of 0.9293.
+
+## AIC model
 
 Model selection/variable selection.
 
 We will use AIC and forward prediction because AIC will helps us to prevent overfitting.
 
-```{r}
-#data splitting.
-#Here we are splitting the data to train and test where we took data from 1990 to 2010 as training data and data from 2010 as testing data, So, technically we are predicting future results.
-
-# test.subset <- c("2011","2012","2013","2014","2015")
-# values <- df.all$Year.x %in% test.subset
-# data.test <- df.all[values,]
-# data.train <- df.all[!values,]
-
-# this test split did not work because - we had taken year as a factor! and when we try to test the model with new data, since our model did not see these factors before, it could not run the model and throwing error.
-
-```
-
+Here we are using forward selection process to select the predictors.
 
 ```{r}
-library(olsrr)
-set.seed(108)
-# 
-data.sample <- sample(2,nrow(df.all),replace = T, prob = c(0.8,0.2))
-data.train <- df.all[data.sample ==1,]
-data.test <- df.all[data.sample ==2,]
-
-
-model.all <- lm(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)
-#summary(model.all)
-#our model.all with all predictor variables gave an Adjusted r-squared value of 0.9772
-#but our fwdfit.aic model gave Adjusted R-squared vlaues of 0.9765 with only 19 predictors
-
+#forward selection
 fwdfit.aic <- ols_step_forward_aic(model.all)
+
 #summary of model
 fwdfit.aic
 
@@ -826,18 +830,96 @@ fwdfit.aic$model
 summary(fwdfit.aic$model)
 
 ```
-Our model with AIC slection has got an Adjusted R-squared vlaues of 0.9765 which indicates a very good model.
 
-#testing model
+Our fwdfit.aic model gave Adjusted R-squared values of 0.9765 with only 34 predictors which indicates a very good model compared to model.all
+
+## Lasso regression
+
+```{r}
+library(glmnet)
+
+#perform k-fold cross-validation to find optimal lambda value
+cv_model <- cv.glmnet(model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)[,-6],data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal.,alpha = 1)
+
+summary(cv_model)
+
+#find optimal lambda value that minimizes test MSE
+best_lambda <- cv_model$lambda.min
+best_lambda
+
+
+#produce plot of test MSE by lambda value
+plot(cv_model) 
+
+#find coefficients of best model
+best_model <- glmnet(model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)[,-6],data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal., alpha = 1, lambda = best_lambda)
+
+#coeffiecients of lasso best model
+coef(best_model)
+
+#summary of lasso best model.
+summary(best_model)
+```
+
+## coefficeints of lasso
+```{r}
+coef.lasso<- predict(best_model,type = "coefficients",s= best_lambda)
+coef.lasso
+
+#coeffs of full model  \beta
+coef(model.all)
+```
+
+
+We an clearly see that compared to the linear fit, our Lasso Regularization has shrinked the coefficients and we can also notice that most of them are shrinked to almost zero.
+
+# Results 
+
+## Data Rescaling
+
+```{r}
+#rescaling function
+#DE-standardizing
+for (i in names.list){
+  x = 1
+  while(x <= nrow(df.stats)){
+    if(i == df.stats[x,'names']){
+      #print(i)
+      m = df.stats[1,'m']
+      s = df.stats[1,'s']
+      k = unlist(df.all[i])
+      z <- ((k * as.numeric(s)) + as.numeric(m))
+      df.all[i] <- z
+    }
+    x = x+1
+  }
+}
+
+```
+
+## Train,test,split - rescaled data
+
+Since, here we are only splitting data based on year and its not a random shuffling, so now we are splitting data again for rescaled data and we will run our model on re-scaled observations.
+
+```{r}
+#data split
+data.train <- df.all[df.all$Year.x <= 2010,]
+data.test <- df.all[df.all$Year.x > 2010,]
+
+```
+
+
+## Testing AIC model
+
 ```{r}
 #training predictions
 prediction.train <- predict(fwdfit.aic$model,newdata = data.train)
 training.df1 <- data.train%>% mutate(pred.reg.train = prediction.train)
-plot(training.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,training.df1$pred.reg.train,main = "Actual vs Predicted values: Train data",xlab = "Actual data",ylab = "Predicted data")
+plot(training.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,training.df1$pred.reg.train,main = "AIC model: Actual vs Predicted values: Train data",xlab = "PADDY.HARVEST.PRICE..Rs.per.Quintal - Actual data",ylab = "Predicted data")
 #testing predictions
 prediction.test <- predict(fwdfit.aic$model,newdata = data.test)
 testing.df1 <- data.test%>% mutate(pred.reg.test = prediction.test)
-plot(testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,testing.df1$pred.reg.test,main = "Actual vs Predicted values: Test data",xlab = "Actual data",ylab = "Predicted data")
+plot(testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,testing.df1$pred.reg.test,main = "AIC Model: Actual vs Predicted values: Test data",xlab = " PADDY.HARVEST.PRICE..Rs.per.Quintal - Actual data",ylab = "Predicted data")
 
 
 #Calculating RMSE
@@ -846,9 +928,9 @@ RMSE.train
 RMSE.test <- sqrt(mean((testing.df1$pred.reg.test-testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.)^2))
 RMSE.test
 ```
-As we can see, our model predicted almost correct results.
 
-#graphs
+## AIC results Plots
+
 ```{r}
 #plot
 
@@ -865,31 +947,9 @@ plot(fwdfit.aic$aics,main = "AIC vs Predictor",xlab = "Predictor",ylab = "AIC")
 plot(fwdfit.aic$rss,main = "Regression SS vs Predictor",xlab = "Predictor",ylab = "Regression SS")
 ```
 
-#now we will try to do model selction using lasso.
-```{r}
-library(glmnet)
 
-#perform k-fold cross-validation to find optimal lambda value
-cv_model <- cv.glmnet(model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)[,-6],data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal.,alpha = 1)
+## Testing lasso regression model
 
-summary(cv_model)
-
-#find optimal lambda value that minimizes test MSE
-best_lambda <- cv_model$lambda.min
-best_lambda
-
-
-
-#produce plot of test MSE by lambda value
-plot(cv_model) 
-
-#find coefficients of best model
-best_model <- glmnet(model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)[,-6],data.train$PADDY.HARVEST.PRICE..Rs.per.Quintal., alpha = 1, lambda = best_lambda)
-
-coef(best_model)
-summary(best_model)
-```
-#testing lasso
 ```{r}
 #use lasso regression model to predict response value
 
@@ -903,24 +963,14 @@ RMSE.test.lasso <- sqrt(mean((data.test$PADDY.HARVEST.PRICE..Rs.per.Quintal. - p
 RMSE.test.lasso
 ```
 
-#Conclusion:
-Our test RMSE for AIC model is  0.1710452, our test RMSE for Lasso model is  0.1547849
+# Conclusion:
 
-#coefficeints of lasso
-```{r}
-coef.lasso<- predict(best_model,type = "coefficients",s= best_lambda)
-coef.lasso
+Our test RMSE for AIC model is  304.8638, our test RMSE for Lasso model is  281.5105
 
-#coeffs of full model  \beta
-coef(model.all)
-```
+We can see both of our models predicted good results.
 
 
-#conclusion:
-We an clearly see that compared to the linear fit, our Lasso Regularization has shrinked the coefficients and we can also notice that most of them are shrinked to almost zero.
 
-#TODO
-Replace factor for Year as normal year.
-rescale the restuls
+
 
 
