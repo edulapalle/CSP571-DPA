@@ -1,13 +1,15 @@
 ---
-title: 
+title:
 - CSP571 DPA Project
 - Prediction of Rice price per district in Andhra Pradesh
-author: 
+author:
 - Santosh Reddy Edulapalle
 - Jobin Joyson
 - Venkata Siva Rupesh Akurati
 date: "2022-11-07"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 
