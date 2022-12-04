@@ -834,7 +834,7 @@ summary(fwdfit.aic$model)
 
 ```
 
-Our fwdfit.aic model gave Adjusted R-squared values of 0.9765 with only 34 predictors which indicates a very good model compared to model.all
+Our fwdfit.aic model gave Adjusted R-squared values of 0.9765 with only 23 predictors which indicates a very good model compared to model.all
 
 ```{r}
 #AIC model plot
