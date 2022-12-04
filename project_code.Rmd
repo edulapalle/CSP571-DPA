@@ -835,6 +835,22 @@ summary(fwdfit.aic$model)
 
 Our fwdfit.aic model gave Adjusted R-squared values of 0.9765 with only 34 predictors which indicates a very good model compared to model.all
 
+```{r}
+#AIC model plot
+
+plot(fwdfit.aic)
+#plotting final model characteristics
+par(mfrow=c(2,2))
+plot(fwdfit.aic$model)
+#plotting final model residuals.
+par(mfrow=c(3,2))
+plot(fwdfit.aic$ess,main = "Residuals SS vs Predictor",xlab = "Predictor",ylab = "Residuals SS")
+plot(fwdfit.aic$rsq,main = "R-squared vs Predictor",xlab = "Predictor",ylab = "R-squared")
+plot(fwdfit.aic$arsq,main = "Adjusted R-squared vs Predictor",xlab = "Predictor",ylab = "Adjusted R-squared")
+plot(fwdfit.aic$aics,main = "AIC vs Predictor",xlab = "Predictor",ylab = "AIC")
+plot(fwdfit.aic$rss,main = "Regression SS vs Predictor",xlab = "Predictor",ylab = "Regression SS")
+```
+
 ## Lasso regression
 
 ```{r}
@@ -911,6 +927,26 @@ data.test <- df.all[df.all$Year.x > 2010,]
 ```
 
 
+## Testing Model with all predictors
+
+```{r}
+#testing predictions
+prediction.all.test <- predict(model.all,newdata = data.test)
+testing.df1 <- data.test%>% mutate(pred.all.model.test = prediction.all.test)
+plot(testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,testing.df1$pred.all.model.test,main = "All predictor Model: Actual vs Predicted values: Test data",xlab = " PADDY.HARVEST.PRICE..Rs.per.Quintal - Actual data",ylab = "Predicted data")
+
+#RMSE for all predictor model
+#sqrt(mean((data$actual - data$predicted)^2))
+
+RMSE.test <- sqrt(mean((testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal. - testing.df1$pred.all.model.test)^2))
+RMSE.test
+
+
+```
+
+We can see that our model with all predictors did not correctly predict the results, the predictions were too bad. And RMSE is around 3076.591
+
+
 ## Testing AIC model
 
 ```{r}
@@ -918,6 +954,7 @@ data.test <- df.all[df.all$Year.x > 2010,]
 prediction.train <- predict(fwdfit.aic$model,newdata = data.train)
 training.df1 <- data.train%>% mutate(pred.reg.train = prediction.train)
 plot(training.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,training.df1$pred.reg.train,main = "AIC model: Actual vs Predicted values: Train data",xlab = "PADDY.HARVEST.PRICE..Rs.per.Quintal - Actual data",ylab = "Predicted data")
+
 #testing predictions
 prediction.test <- predict(fwdfit.aic$model,newdata = data.test)
 testing.df1 <- data.test%>% mutate(pred.reg.test = prediction.test)
@@ -927,27 +964,13 @@ plot(testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,testing.df1$pred.reg.test,
 #Calculating RMSE
 RMSE.train <- sqrt(mean((training.df1$pred.reg.train-training.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.)^2))
 RMSE.train
-RMSE.test <- sqrt(mean((testing.df1$pred.reg.test-testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.)^2))
+
+#sqrt(mean((data$actual - data$predicted)^2))
+
+RMSE.test <- sqrt(mean((testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal. - testing.df1$pred.reg.test)^2))
 RMSE.test
 ```
 
-## AIC results Plots
-
-```{r}
-#plot
-
-plot(fwdfit.aic)
-#plotting final model characteristics
-par(mfrow=c(2,2))
-plot(fwdfit.aic$model)
-#plotting final model residuals.
-par(mfrow=c(3,2))
-plot(fwdfit.aic$ess,main = "Residuals SS vs Predictor",xlab = "Predictor",ylab = "Residuals SS")
-plot(fwdfit.aic$rsq,main = "R-squared vs Predictor",xlab = "Predictor",ylab = "R-squared")
-plot(fwdfit.aic$arsq,main = "Adjusted R-squared vs Predictor",xlab = "Predictor",ylab = "Adjusted R-squared")
-plot(fwdfit.aic$aics,main = "AIC vs Predictor",xlab = "Predictor",ylab = "AIC")
-plot(fwdfit.aic$rss,main = "Regression SS vs Predictor",xlab = "Predictor",ylab = "Regression SS")
-```
 
 
 ## Testing lasso regression model
@@ -957,19 +980,33 @@ plot(fwdfit.aic$rss,main = "Regression SS vs Predictor",xlab = "Predictor",ylab 
 
 prediction.test.lasso <- predict(best_model,s=best_lambda,newx = model.matrix(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.test)[,-6])
 
-prediction.test.lasso
+#plotting results
+
+testing.df1 <- data.test%>% mutate(pred.lasso.test = prediction.test.lasso)
+plot(testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal.,testing.df1$pred.lasso.test,main = "Lasso Model: Actual vs Predicted values: Test data",xlab = " PADDY.HARVEST.PRICE..Rs.per.Quintal - Actual data",ylab = "Predicted data")
 
 #RMSE
-RMSE.test.lasso <- sqrt(mean((data.test$PADDY.HARVEST.PRICE..Rs.per.Quintal. - prediction.test.lasso)^2))
+#sqrt(mean((data$actual - data$predicted)^2))
+
+RMSE.test.lasso <- sqrt(mean((testing.df1$PADDY.HARVEST.PRICE..Rs.per.Quintal. - testing.df1$pred.lasso.test)^2))
 
 RMSE.test.lasso
+
+
 ```
 
 # Conclusion:
 
-Our test RMSE for AIC model is  304.8638, our test RMSE for Lasso model is  281.5105
+After carefully cleaning, processing and transforming our data, we could reduce the number of parameters from $137$ to $77$. Feature engineering also helped us in reducing reductant rows that were created during joining the dataframes.
 
-We can see both of our models predicted good results.
+Even $77$ features is a very large for observations of size $338$. We tested this by creating a model with all $77$ parameters and our test RMSE is $3076.591$.
+
+So, we decided to further reduce the features by choosing any of the available feature selection models, so we decided to choose AIC and Lasso to compare the results.
+
+Our test RMSE for AIC model is  $304.8638$, our test RMSE for Lasso model is  $281.5105$
+
+We can see both of our models predicted good results compared to Model with all predictors.
+
 
 
 
