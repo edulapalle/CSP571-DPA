@@ -799,7 +799,8 @@ data.test <- df.all[df.all$Year.x > 2010,]
 
 ```
 
-## General Model
+## General Models - Linear Regression
+
 ```{r}
 library(olsrr)
 set.seed(108)
@@ -999,7 +1000,7 @@ RMSE.test.lasso
 
 After carefully cleaning, processing and transforming our data, we could reduce the number of parameters from $137$ to $77$. Feature engineering also helped us in reducing reductant rows that were created during joining the dataframes.
 
-Even $77$ features is a very large for observations of size $338$. We tested this by creating a model with all $77$ parameters and our test RMSE is $3076.591$.
+Even $77$ features is a very large for observations of size $338$. We tested this by creating Linear Regression model with all $77$ parameters and our test RMSE is $3076.591$.
 
 So, we decided to further reduce the features by choosing any of the available feature selection models, so we decided to choose AIC and Lasso to compare the results.
 
