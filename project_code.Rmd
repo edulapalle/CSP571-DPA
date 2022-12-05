@@ -8,7 +8,6 @@ author:
 - Venkata Siva Rupesh Akurati
 date: "2022-11-07"
 output:
-  pdf_document: default
   html_document: default
 ---
 
@@ -810,7 +809,7 @@ model.all <- lm(PADDY.HARVEST.PRICE..Rs.per.Quintal.~., data = data.train)
 summary(model.all)
 ```
 
-Our model.all with all predictor variables gave an Adjusted r-squared value of 0.9293.
+Our Linear regression model (model.all with all predictor) variables gave an Adjusted r-squared value of 0.9293.
 
 ## AIC model
 
@@ -878,6 +877,7 @@ coef(best_model)
 
 #summary of lasso best model.
 summary(best_model)
+
 ```
 
 ## coefficeints of lasso
@@ -945,7 +945,7 @@ RMSE.test
 
 ```
 
-We can see that our model with all predictors did not correctly predict the results, the predictions were too bad. And RMSE is around 3076.591
+We can see that our Linear Regression model with all predictors did not correctly predict the results, the predictions were too bad. And RMSE is around 3076.591
 
 
 ## Testing AIC model
